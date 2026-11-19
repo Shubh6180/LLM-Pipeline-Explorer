@@ -1,4 +1,4 @@
-# Neural Text & Vector Workbench
+# LLM Pipeline Explorer
 
 An interactive, zero-dependency educational tool demonstrating how raw text is broken into subword tokens and projected into 3D semantic space. Runs 100% client-side in the browser.
 
