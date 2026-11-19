@@ -1,0 +1,3289 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Neural Text &amp; Vector Workbench</title>
+  
+  <!-- Inline SVG Favicon (Precision Vector Glyph in Warm Terracotta & Deep Ink) -->
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='5' fill='%23141312'/%3E%3Ccircle cx='9' cy='9' r='3.5' fill='%23b84214'/%3E%3Ccircle cx='23' cy='11' r='3' fill='%23d97706'/%3E%3Ccircle cx='16' cy='23' r='4' fill='%231d4ed8'/%3E%3Cline x1='9' y1='9' x2='23' y2='11' stroke='%23e3ded5' stroke-width='1.5' stroke-dasharray='2,2'/%3E%3Cline x1='9' y1='9' x2='16' y2='23' stroke='%23e3ded5' stroke-width='1.5'/%3E%3Cline x1='23' y1='11' x2='16' y2='23' stroke='%23e3ded5' stroke-width='1.5'/%3E%3C/svg%3E">
+
+  <!-- Pinned Plotly.js gl3d bundle with fallback detection -->
+  <script src="https://cdn.plot.ly/plotly-gl3d-2.35.2.min.js" onerror="window.plotlyFailed=true"></script>
+
+  <style>
+    /* ==========================================================================
+       SYSTEM DESIGN TOKENS & SEMANTIC CSS CUSTOM PROPERTIES
+       Strict Zero-Hardcoded-Hex Architecture for Components
+       ========================================================================== */
+    :root {
+      /* Surface Elevation & Grounds */
+      --ground-canvas: #f6f5f1;          /* Ground paper canvas */
+      --ground-card: #ffffff;            /* Elevated card surface */
+      --ground-well: #f0eee9;            /* Recessed input well */
+      --ground-well-subtle: #f9f8f5;     /* Soft recessed container */
+      --ground-hover: #eae7e0;           /* Subtle interactive hover */
+      --ground-active: #dfdbd2;          /* Active pressed background */
+
+      /* Structural Rules & Hairlines */
+      --rule-hairline: #e3ded5;          /* Crisp 1px structural dividing line */
+      --rule-strong: #141312;            /* Tectonic ink line */
+      --rule-muted: #d5cfc4;             /* Muted internal frame border */
+      --rule-focus: #b84214;             /* High-visibility keyboard focus */
+
+      /* Inks & Text Colors */
+      --ink-primary: #141312;            /* Deep carbon ink for primary typography */
+      --ink-hover: #2a2826;              /* Dark ink hover state */
+      --ink-secondary: #575249;          /* Balanced midtone for metadata & labels */
+      --ink-muted: #857e72;              /* Muted secondary notation / micro labels */
+      --ink-faint: #aba396;              /* Faint structural guidelines */
+      --ink-inverse: #ffffff;            /* Clean white ink on dark surfaces */
+
+      /* Signature Warm Accent */
+      --accent-base: #b84214;            /* Signature terracotta / burnt amber */
+      --accent-hover: #9c360e;           /* Deepened warm accent hover */
+      --accent-active: #7e2b09;          /* Pressed active state */
+      --accent-tint: #fbf0ea;            /* Delicate warm tint for highlights & badges */
+      --accent-border: #f0956b;          /* Soft warm accent border */
+
+      /* Semantic Token Chips & States */
+      --token-word-bg: #eceae3;
+      --token-word-border: #756f64;
+      --token-word-text: #1a1816;
+
+      --token-sub-bg: #fef7e8;
+      --token-sub-border: #d97706;
+      --token-sub-text: #8c4206;
+
+      --token-unk-bg: #fdf2f2;
+      --token-unk-border: #dc2626;
+      --token-unk-text: #991b1b;
+
+      /* Status Badges */
+      --badge-active-bg: #eef8f2;
+      --badge-active-border: #86efac;
+      --badge-active-text: #166534;
+
+      --badge-dropped-bg: #fdf2f2;
+      --badge-dropped-border: #fca5a5;
+      --badge-dropped-text: #991b1b;
+
+      --badge-char-bg: #f3f0fa;
+      --badge-char-border: #c4b5fd;
+      --badge-char-text: #5b21b6;
+
+      --badge-warning-bg: #fffbeb;
+      --badge-warning-border: #fcd34d;
+      --badge-warning-text: #92400e;
+
+      /* Data Clusters (Consistent across 2D & 3D) */
+      --cluster-space: #1d4ed8;          /* Cluster 1: Astrophysics & Orbital Mechanics */
+      --cluster-space-tint: #eff6ff;
+      --cluster-baking: #15803d;         /* Cluster 2: Culinary Baking & Pastry */
+      --cluster-baking-tint: #f0fdf4;
+      --cluster-finance: #6b21a8;        /* Cluster 3: Financial Markets & Equity */
+      --cluster-finance-tint: #faf5ff;
+      --cluster-query: var(--accent-base); /* Custom User Query */
+
+      /* Typography Stacks */
+      --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      --font-mono: ui-monospace, "SF Mono", "Cascadia Code", "Source Code Pro", Menlo, Monaco, Consolas, monospace;
+
+      /* Spatial Rhythm Scale */
+      --space-2: 2px;
+      --space-4: 4px;
+      --space-6: 6px;
+      --space-8: 8px;
+      --space-12: 12px;
+      --space-16: 16px;
+      --space-20: 20px;
+      --space-24: 24px;
+      --space-32: 32px;
+      --space-40: 40px;
+      --space-48: 48px;
+
+      /* Radii */
+      --radius-sm: 3px;
+      --radius-md: 4px;
+      --radius-lg: 6px;
+      --radius-full: 9999px;
+    }
+
+    /* Base Reset & Universal Box Model */
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html {
+      font-size: 15px;
+      line-height: 1.6;
+      background-color: var(--ground-canvas);
+      color: var(--ink-primary);
+      font-family: var(--font-sans);
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
+    body {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      padding: 0 var(--space-20) var(--space-48);
+    }
+
+    /* Keyboard Focus Ring */
+    :focus-visible {
+      outline: 2px solid var(--rule-focus);
+      outline-offset: 2px;
+    }
+
+    /* Layout Container */
+    .workbench-container {
+      max-width: 1080px;
+      width: 100%;
+      margin: 0 auto;
+    }
+
+    /* ==========================================================================
+       APP HEADER & MONOGRAPH METADATA
+       ========================================================================== */
+    .app-header {
+      padding: var(--space-40) 0 var(--space-24);
+      border-bottom: 2px solid var(--rule-strong);
+      margin-bottom: var(--space-40);
+    }
+
+    .header-eyebrow {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: var(--space-12);
+      margin-bottom: var(--space-12);
+    }
+
+    .spec-id {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--space-6);
+      font-family: var(--font-mono);
+      font-size: 11px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      font-weight: 700;
+      color: var(--accent-base);
+    }
+
+    .spec-id::before {
+      content: "";
+      display: inline-block;
+      width: 8px;
+      height: 8px;
+      background: var(--accent-base);
+      border-radius: var(--radius-sm);
+    }
+
+    .spec-tags {
+      display: flex;
+      gap: var(--space-6);
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    .tag-pill {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      letter-spacing: 0.05em;
+      font-weight: 600;
+      padding: var(--space-2) var(--space-8);
+      border: 1px solid var(--rule-muted);
+      border-radius: var(--radius-sm);
+      background: var(--ground-card);
+      color: var(--ink-secondary);
+      text-transform: uppercase;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .tag-pill.live-test {
+      border-color: var(--badge-active-border);
+      color: var(--badge-active-text);
+      background: var(--badge-active-bg);
+      display: inline-flex;
+      align-items: center;
+      gap: var(--space-4);
+    }
+
+    .app-title {
+      font-size: 30px;
+      font-weight: 700;
+      letter-spacing: -0.025em;
+      color: var(--ink-primary);
+      line-height: 1.25;
+      margin-bottom: var(--space-8);
+    }
+
+    .app-description {
+      font-size: 15px;
+      color: var(--ink-secondary);
+      max-width: 860px;
+      line-height: 1.6;
+    }
+
+    /* ==========================================================================
+       SECTION CARDS & ARCHITECTURAL GRID
+       ========================================================================== */
+    .workbench-card {
+      background: var(--ground-card);
+      border: 1px solid var(--rule-hairline);
+      border-radius: var(--radius-md);
+      padding: var(--space-32);
+      margin-bottom: var(--space-40);
+      box-shadow: 0 1px 3px rgba(20, 19, 18, 0.03);
+    }
+
+    @media (max-width: 720px) {
+      .workbench-card {
+        padding: var(--space-20);
+      }
+    }
+
+    .card-header {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: var(--space-12);
+      padding-bottom: var(--space-20);
+      margin-bottom: var(--space-24);
+      border-bottom: 1px solid var(--rule-hairline);
+    }
+
+    .section-banner {
+      display: flex;
+      align-items: flex-start;
+      gap: var(--space-12);
+    }
+
+    .section-num {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      color: var(--accent-base);
+      background: var(--accent-tint);
+      border: 1px solid var(--accent-border);
+      padding: var(--space-2) var(--space-8);
+      border-radius: var(--radius-sm);
+      text-transform: uppercase;
+      line-height: 1.4;
+      margin-top: var(--space-2);
+    }
+
+    .section-title {
+      font-size: 20px;
+      font-weight: 700;
+      letter-spacing: -0.015em;
+      color: var(--ink-primary);
+      line-height: 1.3;
+    }
+
+    .section-subtitle {
+      font-size: 13px;
+      color: var(--ink-secondary);
+      display: block;
+      margin-top: var(--space-2);
+    }
+
+    /* Form Layout Grid */
+    .controls-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: var(--space-24);
+      margin-bottom: var(--space-24);
+    }
+
+    @media (max-width: 720px) {
+      .controls-grid {
+        grid-template-columns: 1fr;
+        gap: var(--space-20);
+      }
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-8);
+    }
+
+    .form-label {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      color: var(--ink-primary);
+    }
+
+    .form-label-hint {
+      font-size: 11px;
+      font-weight: 400;
+      text-transform: none;
+      color: var(--ink-muted);
+      font-family: var(--font-mono);
+      font-variant-numeric: tabular-nums;
+    }
+
+    /* Recessed Input Wells */
+    .input-well-wrapper {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .monospace-textarea {
+      font-family: var(--font-mono);
+      font-size: 13px;
+      line-height: 1.6;
+      padding: var(--space-12) var(--space-16);
+      background: var(--ground-well);
+      border: 1px solid var(--rule-hairline);
+      border-radius: var(--radius-sm);
+      color: var(--ink-primary);
+      resize: vertical;
+      transition: background-color 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .monospace-textarea:focus {
+      background: var(--ground-card);
+      border-color: var(--accent-base);
+      box-shadow: 0 0 0 1px var(--accent-base);
+      outline: none;
+    }
+
+    .single-input {
+      font-family: var(--font-mono);
+      font-size: 14px;
+      padding: var(--space-10, 10px) var(--space-16);
+      background: var(--ground-well);
+      border: 1px solid var(--rule-hairline);
+      border-radius: var(--radius-sm);
+      color: var(--ink-primary);
+      width: 100%;
+      transition: background-color 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .single-input:focus {
+      background: var(--ground-card);
+      border-color: var(--accent-base);
+      box-shadow: 0 0 0 1px var(--accent-base);
+      outline: none;
+    }
+
+    /* Inline Validation & Warnings (Replacing alert()) */
+    .inline-warning, .inline-notice {
+      display: flex;
+      align-items: center;
+      gap: var(--space-8);
+      padding: var(--space-8) var(--space-12);
+      font-size: 12px;
+      font-family: var(--font-mono);
+      border-radius: var(--radius-sm);
+      margin-top: var(--space-8);
+      line-height: 1.4;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .inline-warning {
+      background: var(--badge-warning-bg);
+      border: 1px solid var(--badge-warning-border);
+      color: var(--badge-warning-text);
+    }
+
+    .inline-warning.hidden {
+      display: none;
+    }
+
+    .inline-notice.error {
+      background: var(--badge-dropped-bg);
+      border: 1px solid var(--badge-dropped-border);
+      color: var(--badge-dropped-text);
+    }
+
+    .inline-notice.info {
+      background: var(--accent-tint);
+      border: 1px solid var(--accent-border);
+      color: var(--accent-base);
+    }
+
+    /* Buttons & Interactive Controls */
+    .button-group {
+      display: flex;
+      gap: var(--space-12);
+      align-items: center;
+      flex-wrap: wrap;
+      margin: var(--space-20) 0;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: var(--space-8);
+      font-family: var(--font-sans);
+      font-size: 13px;
+      font-weight: 600;
+      letter-spacing: 0.02em;
+      padding: var(--space-8) var(--space-16);
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      border: 1px solid transparent;
+      transition: background-color 0.12s ease, border-color 0.12s ease, color 0.12s ease, transform 0.08s ease;
+      text-decoration: none;
+      user-select: none;
+    }
+
+    .btn:active:not(:disabled) {
+      transform: translateY(1px);
+    }
+
+    .btn-primary {
+      background: var(--ink-primary);
+      color: var(--ink-inverse);
+      border-color: var(--ink-primary);
+    }
+
+    .btn-primary:hover:not(:disabled) {
+      background: var(--ink-hover);
+      border-color: var(--ink-hover);
+    }
+
+    .btn-accent {
+      background: var(--accent-base);
+      color: var(--ink-inverse);
+      border-color: var(--accent-base);
+    }
+
+    .btn-accent:hover:not(:disabled) {
+      background: var(--accent-hover);
+      border-color: var(--accent-hover);
+    }
+
+    .btn-secondary {
+      background: var(--ground-card);
+      color: var(--ink-primary);
+      border-color: var(--rule-muted);
+    }
+
+    .btn-secondary:hover:not(:disabled) {
+      background: var(--ground-hover);
+      border-color: var(--rule-strong);
+    }
+
+    .btn:disabled {
+      background: var(--ground-well);
+      color: var(--ink-faint);
+      border-color: var(--rule-hairline);
+      cursor: not-allowed;
+    }
+
+    /* ==========================================================================
+       TACTILE VOCABULARY SLIDER & TELEMETRY CARDS
+       ========================================================================== */
+    .slider-card {
+      background: var(--ground-well-subtle);
+      border: 1px solid var(--rule-hairline);
+      border-radius: var(--radius-sm);
+      padding: var(--space-20);
+      margin: var(--space-20) 0 var(--space-24);
+    }
+
+    .slider-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: var(--space-12);
+    }
+
+    .slider-label {
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      color: var(--ink-primary);
+    }
+
+    .slider-value {
+      font-family: var(--font-mono);
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--accent-base);
+      background: var(--accent-tint);
+      border: 1px solid var(--accent-border);
+      padding: var(--space-2) var(--space-8);
+      border-radius: var(--radius-sm);
+      font-variant-numeric: tabular-nums;
+    }
+
+    .custom-range {
+      width: 100%;
+      height: 8px;
+      -webkit-appearance: none;
+      appearance: none;
+      background: var(--rule-muted);
+      border-radius: var(--radius-sm);
+      outline: none;
+      transition: background-color 0.15s ease;
+    }
+
+    .custom-range:focus-visible {
+      outline: 2px solid var(--rule-focus);
+      outline-offset: 4px;
+    }
+
+    .custom-range::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      background: var(--accent-base);
+      border: 2px solid var(--ground-card);
+      cursor: pointer;
+      box-shadow: 0 1px 4px rgba(20, 19, 18, 0.25);
+      transition: transform 0.1s ease, background-color 0.1s ease;
+    }
+
+    .custom-range::-webkit-slider-thumb:hover {
+      background: var(--accent-hover);
+      transform: scale(1.1);
+    }
+
+    .custom-range::-moz-range-thumb {
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      background: var(--accent-base);
+      border: 2px solid var(--ground-card);
+      cursor: pointer;
+      box-shadow: 0 1px 4px rgba(20, 19, 18, 0.25);
+      transition: transform 0.1s ease, background-color 0.1s ease;
+    }
+
+    .slider-caption {
+      font-size: 12px;
+      color: var(--ink-secondary);
+      margin-top: var(--space-12);
+      line-height: 1.5;
+    }
+
+    /* Telemetry Metrics Grid */
+    .telemetry-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: var(--space-16);
+      margin-bottom: var(--space-24);
+    }
+
+    @media (max-width: 580px) {
+      .telemetry-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .metric-card {
+      background: var(--ground-well-subtle);
+      border: 1px solid var(--rule-hairline);
+      border-radius: var(--radius-sm);
+      padding: var(--space-16);
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-4);
+      transition: border-color 0.15s ease;
+    }
+
+    .metric-name {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--ink-secondary);
+      font-weight: 700;
+    }
+
+    .metric-value {
+      font-family: var(--font-mono);
+      font-size: 26px;
+      font-weight: 700;
+      color: var(--ink-primary);
+      font-variant-numeric: tabular-nums;
+      line-height: 1.2;
+    }
+
+    .metric-sub {
+      font-size: 12px;
+      color: var(--ink-muted);
+    }
+
+    /* ==========================================================================
+       PRECISION TOKEN CHIPS & INLINE LEGEND
+       ========================================================================== */
+    .chips-section {
+      margin-bottom: var(--space-32);
+    }
+
+    .chips-header-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: var(--space-12);
+      margin-bottom: var(--space-12);
+      padding-bottom: var(--space-8);
+      border-bottom: 1px dashed var(--rule-hairline);
+    }
+
+    .chips-title {
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      color: var(--ink-primary);
+    }
+
+    .chip-legend {
+      display: flex;
+      align-items: center;
+      gap: var(--space-16);
+      flex-wrap: wrap;
+    }
+
+    .legend-item {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--space-6);
+      font-size: 11px;
+      color: var(--ink-secondary);
+      font-family: var(--font-mono);
+    }
+
+    .legend-swatch {
+      width: 14px;
+      height: 14px;
+      border-radius: var(--radius-sm);
+    }
+
+    .legend-swatch.word {
+      background: var(--token-word-bg);
+      border: 1px solid var(--token-word-border);
+    }
+
+    .legend-swatch.sub {
+      background: var(--token-sub-bg);
+      border: 1px solid var(--token-sub-border);
+    }
+
+    .legend-swatch.unk {
+      background: var(--token-unk-bg);
+      border: 1px dashed var(--token-unk-border);
+    }
+
+    .token-stream {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--space-8);
+      padding: var(--space-16);
+      background: var(--ground-well);
+      border: 1px solid var(--rule-hairline);
+      border-radius: var(--radius-sm);
+      min-height: 80px;
+      align-items: center;
+    }
+
+    .token-chip {
+      display: inline-flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: var(--space-4) var(--space-8);
+      border-radius: var(--radius-sm);
+      font-family: var(--font-mono);
+      user-select: none;
+      transition: transform 0.1s ease, box-shadow 0.1s ease;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .token-chip:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 2px 4px rgba(20, 19, 18, 0.08);
+    }
+
+    .token-chip.kind-word {
+      background: var(--token-word-bg);
+      border: 1px solid var(--token-word-border);
+      color: var(--token-word-text);
+    }
+
+    .token-chip.kind-sub {
+      background: var(--token-sub-bg);
+      border: 1px solid var(--token-sub-border);
+      color: var(--token-sub-text);
+    }
+
+    .token-chip.kind-unk {
+      background: var(--token-unk-bg);
+      border: 1px dashed var(--token-unk-border);
+      color: var(--token-unk-text);
+    }
+
+    .chip-text {
+      font-size: 13px;
+      font-weight: 700;
+      line-height: 1.25;
+    }
+
+    .chip-id {
+      font-size: 10px;
+      opacity: 0.85;
+      letter-spacing: 0.03em;
+      margin-top: 1px;
+    }
+
+    /* ==========================================================================
+       TABLES (INSPECTOR & SIMILARITY WITH STICKY HEADERS)
+       ========================================================================== */
+    .table-container {
+      width: 100%;
+      max-height: 300px;
+      overflow-y: auto;
+      overflow-x: auto;
+      border: 1px solid var(--rule-hairline);
+      border-radius: var(--radius-sm);
+      background: var(--ground-card);
+      -webkit-overflow-scrolling: touch;
+    }
+
+    .spec-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+      text-align: left;
+    }
+
+    .spec-table th {
+      position: sticky;
+      top: 0;
+      background: var(--ground-well);
+      color: var(--ink-primary);
+      font-weight: 700;
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      padding: var(--space-10, 10px) var(--space-16);
+      border-bottom: 1px solid var(--rule-muted);
+      z-index: 2;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .spec-table td {
+      padding: var(--space-8) var(--space-16);
+      border-bottom: 1px solid var(--rule-hairline);
+      color: var(--ink-primary);
+      font-variant-numeric: tabular-nums;
+    }
+
+    .spec-table tr:last-child td {
+      border-bottom: none;
+    }
+
+    .spec-table tr:hover td {
+      background: var(--ground-well-subtle);
+    }
+
+    .col-mono {
+      font-family: var(--font-mono);
+      font-variant-numeric: tabular-nums;
+    }
+
+    .col-right {
+      text-align: right;
+    }
+
+    .status-badge {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      font-weight: 600;
+      padding: var(--space-2) var(--space-6);
+      border-radius: var(--radius-sm);
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+      display: inline-block;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .status-badge.active {
+      background: var(--badge-active-bg);
+      color: var(--badge-active-text);
+      border: 1px solid var(--badge-active-border);
+    }
+
+    .status-badge.dropped {
+      background: var(--badge-dropped-bg);
+      color: var(--badge-dropped-text);
+      border: 1px solid var(--badge-dropped-border);
+    }
+
+    .status-badge.char {
+      background: var(--badge-char-bg);
+      color: var(--badge-char-text);
+      border: 1px solid var(--badge-char-border);
+    }
+
+    /* ==========================================================================
+       SECTION 2: 3D VECTOR SPACE LAB & INSTRUMENT STAGE
+       ========================================================================== */
+    .viewport-card {
+      border: 1px solid var(--rule-hairline);
+      border-radius: var(--radius-sm);
+      background: var(--ground-card);
+      overflow: hidden;
+      margin-bottom: var(--space-32);
+    }
+
+    .viewport-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: var(--space-12);
+      padding: var(--space-12) var(--space-16);
+      background: var(--ground-well);
+      border-bottom: 1px solid var(--rule-hairline);
+    }
+
+    .viewport-meta {
+      display: flex;
+      align-items: center;
+      gap: var(--space-12);
+      flex-wrap: wrap;
+    }
+
+    .variance-pill {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--ink-primary);
+      background: var(--ground-card);
+      border: 1px solid var(--rule-muted);
+      padding: var(--space-4) var(--space-10);
+      border-radius: var(--radius-sm);
+      font-variant-numeric: tabular-nums;
+    }
+
+    .renderer-badge {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 700;
+      padding: var(--space-4) var(--space-10);
+      border-radius: var(--radius-sm);
+      display: inline-flex;
+      align-items: center;
+      gap: var(--space-6);
+    }
+
+    .renderer-badge.webgl {
+      background: var(--cluster-space-tint);
+      border: 1px solid var(--cluster-space);
+      color: var(--cluster-space);
+    }
+
+    .renderer-badge.canvas {
+      background: var(--accent-tint);
+      border: 1px solid var(--accent-border);
+      color: var(--accent-base);
+    }
+
+    .viewport-stage {
+      position: relative;
+      width: 100%;
+      height: 480px;
+      background: var(--ground-card);
+    }
+
+    @media (max-width: 640px) {
+      .viewport-stage {
+        height: 380px;
+      }
+    }
+
+    #plotly-container {
+      width: 100%;
+      height: 100%;
+    }
+
+    #canvas-container {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      display: none;
+    }
+
+    #canvas-fallback {
+      display: block;
+      width: 100%;
+      height: 100%;
+      cursor: grab;
+    }
+
+    #canvas-fallback:active {
+      cursor: grabbing;
+    }
+
+    /* Polished Canvas 2D Floating Tooltip */
+    .canvas-tooltip {
+      position: absolute;
+      pointer-events: none;
+      background: var(--ink-primary);
+      color: var(--ink-inverse);
+      padding: var(--space-10) var(--space-14);
+      border-radius: var(--radius-sm);
+      font-size: 12px;
+      font-family: var(--font-sans);
+      line-height: 1.45;
+      max-width: 280px;
+      box-shadow: 0 4px 16px rgba(20, 19, 18, 0.28);
+      z-index: 10;
+      display: none;
+      transform: translate(-50%, -120%);
+    }
+
+    .canvas-tooltip .tt-cluster {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--accent-border);
+      margin-bottom: var(--space-4);
+      font-weight: 700;
+    }
+
+    .canvas-tooltip .tt-coords {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      color: var(--ink-muted);
+      margin-top: var(--space-6);
+      font-variant-numeric: tabular-nums;
+    }
+
+    .viewport-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: var(--space-12);
+      padding: var(--space-8) var(--space-16);
+      background: var(--ground-well);
+      border-top: 1px solid var(--rule-hairline);
+      font-size: 11px;
+      color: var(--ink-secondary);
+      font-family: var(--font-mono);
+      font-variant-numeric: tabular-nums;
+    }
+
+    .canvas-controls-hint {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--space-10);
+    }
+
+    .btn-camera-reset {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      padding: var(--space-2) var(--space-8);
+      border: 1px solid var(--rule-muted);
+      border-radius: var(--radius-sm);
+      background: var(--ground-card);
+      color: var(--ink-primary);
+      cursor: pointer;
+    }
+
+    .btn-camera-reset:hover {
+      background: var(--ground-hover);
+      border-color: var(--rule-strong);
+    }
+
+    /* Explanatory Technical Note */
+    .engine-note {
+      font-size: 13px;
+      line-height: 1.6;
+      color: var(--ink-secondary);
+      background: var(--ground-well-subtle);
+      border-left: 3px solid var(--accent-base);
+      padding: var(--space-12) var(--space-16);
+      margin: var(--space-20) 0 var(--space-28);
+      border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+    }
+
+    /* Live Query Sandbox Deck */
+    .query-sandbox-card {
+      background: var(--ground-well-subtle);
+      border: 1px solid var(--rule-hairline);
+      border-radius: var(--radius-sm);
+      padding: var(--space-24);
+      margin-top: var(--space-32);
+    }
+
+    .query-header {
+      font-size: 16px;
+      font-weight: 700;
+      letter-spacing: -0.01em;
+      margin-bottom: var(--space-4);
+      color: var(--ink-primary);
+    }
+
+    .query-caption {
+      font-size: 13px;
+      color: var(--ink-secondary);
+      margin-bottom: var(--space-16);
+    }
+
+    .query-input-bar {
+      display: flex;
+      gap: var(--space-12);
+      margin-bottom: var(--space-16);
+      flex-wrap: wrap;
+    }
+
+    .query-input-bar .single-input {
+      flex: 1;
+      min-width: 260px;
+    }
+
+    /* 3-Step Readout Breakdown */
+    .query-breakdown {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-16);
+      margin-top: var(--space-20);
+      padding-top: var(--space-20);
+      border-top: 1px dashed var(--rule-hairline);
+    }
+
+    .breakdown-step {
+      background: var(--ground-card);
+      border: 1px solid var(--rule-hairline);
+      border-radius: var(--radius-sm);
+      padding: var(--space-16);
+    }
+
+    .step-title {
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--accent-base);
+      margin-bottom: var(--space-10);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .vector-preview {
+      font-family: var(--font-mono);
+      font-size: 13px;
+      line-height: 1.6;
+      background: var(--ground-well);
+      padding: var(--space-10) var(--space-14);
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--rule-hairline);
+      word-break: break-all;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .nearest-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-8);
+    }
+
+    .nearest-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: var(--space-12);
+      padding: var(--space-8) var(--space-12);
+      background: var(--ground-well);
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--rule-hairline);
+      font-size: 13px;
+    }
+
+    .nearest-rank {
+      font-family: var(--font-mono);
+      font-weight: 700;
+      color: var(--accent-base);
+      min-width: 22px;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .nearest-text {
+      flex: 1;
+      color: var(--ink-primary);
+    }
+
+    .nearest-sim {
+      font-family: var(--font-mono);
+      font-weight: 600;
+      background: var(--ground-card);
+      padding: var(--space-2) var(--space-8);
+      border: 1px solid var(--rule-muted);
+      border-radius: var(--radius-sm);
+      white-space: nowrap;
+      font-variant-numeric: tabular-nums;
+      font-size: 12px;
+    }
+
+    /* Colophon Footer */
+    .app-footer {
+      margin-top: var(--space-48);
+      padding-top: var(--space-24);
+      border-top: 1px solid var(--rule-hairline);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: var(--space-16);
+      font-size: 12px;
+      color: var(--ink-muted);
+      font-family: var(--font-mono);
+    }
+
+    .footer-links a {
+      color: var(--ink-secondary);
+      text-decoration: none;
+      border-bottom: 1px dotted var(--rule-muted);
+      transition: color 0.12s ease;
+    }
+
+    .footer-links a:hover {
+      color: var(--accent-base);
+      border-bottom-color: var(--accent-base);
+    }
+
+    /* Prefers Reduced Motion */
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="workbench-container">
+    <!-- SEMANTIC HEADER -->
+    <header class="app-header">
+      <div class="header-eyebrow">
+        <span class="spec-id">TECH SPEC-042 // HIGH-PRECISION NLP WORKBENCH</span>
+        <div class="spec-tags">
+          <span class="tag-pill">Zero Dependencies</span>
+          <span class="tag-pill">Dual PCA Jacobi</span>
+          <span class="tag-pill">FNV-1a 64-D Latent</span>
+          <span class="tag-pill">Client-Side Engine</span>
+          <span id="selftest-badge" class="tag-pill live-test" style="display:none;">✓ Self-Test Active</span>
+        </div>
+      </div>
+      <h1 class="app-title">Neural Text &amp; Vector Workbench</h1>
+      <p class="app-description">
+        A precision educational instrument demonstrating the progression from raw character sequences to subword tokens and continuous geometric vector embeddings. All linear algebra, greedy tokenization, and 3D dimensionality reduction execute entirely in client-side JavaScript.
+      </p>
+    </header>
+
+    <main class="app-main">
+
+      <!-- ====================================================================
+           MODULE 1: SUBWORD TOKENIZER LAB
+           ==================================================================== -->
+      <section id="tokenizer-lab" class="workbench-card">
+        <div class="card-header">
+          <div class="section-banner">
+            <span class="section-num">M1</span>
+            <div>
+              <h2 class="section-title">Subword Tokenizer Lab</h2>
+              <span class="section-subtitle">Greedy Longest-Match Subword Tokenization &amp; Vocabulary Construction</span>
+            </div>
+          </div>
+          <div class="section-badge">
+            <span class="tag-pill">Deterministic WordPiece</span>
+          </div>
+        </div>
+
+        <!-- Controls Grid -->
+        <div class="controls-grid">
+          <div class="form-group">
+            <label class="form-label" for="training-corpus-input">
+              <span>Training Corpus</span>
+              <span class="form-label-hint">6 sentences • Lowercased internally</span>
+            </label>
+            <div class="input-well-wrapper">
+              <textarea id="training-corpus-input" class="monospace-textarea" rows="6" spellcheck="false">The rover landed on the red planet.
+The rocket launched into deep space.
+Astronauts orbit the Earth in a station.
+A telescope can see distant stars and moons.
+Do you study astronomy or physics?
+I don't see the moon, but I see the bright stars.</textarea>
+            </div>
+            <div id="corpus-warning" class="inline-warning hidden">
+              <span>⚠ Corpus modified — retrain vocabulary to apply changes</span>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="test-sentence-input">
+              <span>Test Input Sequence</span>
+              <span class="form-label-hint">Evaluates active subword decomposition</span>
+            </label>
+            <div class="input-well-wrapper">
+              <textarea id="test-sentence-input" class="monospace-textarea" rows="6" spellcheck="false">The rockets orbited the starry galaxy.</textarea>
+            </div>
+          </div>
+        </div>
+
+        <!-- Actions Toolbar -->
+        <div class="button-group">
+          <button id="btn-train-vocab" class="btn btn-primary" type="button">Train Vocabulary</button>
+          <button id="btn-run-tokenizer" class="btn btn-secondary" type="button">Run Tokenizer</button>
+          <button id="btn-reset-tokenizer" class="btn btn-secondary" type="button">Reset Default Corpus</button>
+        </div>
+
+        <!-- Dynamic Vocabulary Slider Container (revealed upon training) -->
+        <div id="vocab-slider-container" class="slider-card" style="display: none;">
+          <div class="slider-header">
+            <label class="slider-label" for="vocab-size-slider">Dynamic Vocabulary Truncation</label>
+            <span id="slider-count-label" class="slider-value">Active whole words: 40 of 40</span>
+          </div>
+          <input id="vocab-size-slider" class="custom-range" type="range" min="1" max="40" value="40" step="1">
+          <p class="slider-caption">
+            Dragging this slider dynamically drops the lowest-frequency whole words while preserving stable IDs and keeping single-character pieces intact. Dropped words immediately fracture into <code>##</code> continuation subwords in real time.
+          </p>
+        </div>
+
+        <!-- Telemetry Metrics -->
+        <div class="telemetry-grid">
+          <div class="metric-card">
+            <span class="metric-name">Raw Character Count</span>
+            <span id="metric-char-count" class="metric-value">37</span>
+            <span class="metric-sub">UTF-8 sequence length</span>
+          </div>
+          <div class="metric-card">
+            <span class="metric-name">Emitted Token Count</span>
+            <span id="metric-token-count" class="metric-value">15</span>
+            <span class="metric-sub">Active pieces emitted</span>
+          </div>
+          <div class="metric-card">
+            <span class="metric-name">Compression Ratio</span>
+            <span id="metric-compression" class="metric-value">2.47</span>
+            <span class="metric-sub">Characters per token</span>
+          </div>
+        </div>
+
+        <!-- Token Chips Visualization -->
+        <div class="chips-section">
+          <div class="chips-header-bar">
+            <span class="chips-title">Tokenized Stream</span>
+            <div class="chip-legend">
+              <span class="legend-item"><span class="legend-swatch word"></span> Whole Word</span>
+              <span class="legend-item"><span class="legend-swatch sub"></span> ## Subword</span>
+              <span class="legend-item"><span class="legend-swatch unk"></span> [UNK] Unknown</span>
+            </div>
+          </div>
+          <div id="token-chips-display" class="token-stream" aria-live="polite">
+            <!-- Chips dynamically generated -->
+          </div>
+        </div>
+
+        <!-- Vocabulary Inspector Table -->
+        <div class="form-group">
+          <label class="form-label">
+            <span>Active Vocabulary Inspector</span>
+            <span id="inspector-count-label" class="form-label-hint">Showing entries</span>
+          </label>
+          <div class="table-container">
+            <table class="spec-table" id="vocab-inspector-table">
+              <thead>
+                <tr>
+                  <th style="width: 70px;">ID</th>
+                  <th>Token</th>
+                  <th style="width: 120px;" class="col-right">Corpus Freq</th>
+                  <th style="width: 120px;">Type / Status</th>
+                </tr>
+              </thead>
+              <tbody id="vocab-table-body">
+                <!-- Dynamically populated -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ====================================================================
+           MODULE 2: 3D SEMANTIC VECTOR SPACE
+           ==================================================================== -->
+      <section id="vector-space-lab" class="workbench-card">
+        <div class="card-header">
+          <div class="section-banner">
+            <span class="section-num">M2</span>
+            <div>
+              <h2 class="section-title">3D Semantic Vector Space</h2>
+              <span class="section-subtitle">FNV-1a 64-D Latent Hashing &amp; Dual PCA Jacobi Eigen-Projection</span>
+            </div>
+          </div>
+          <div class="section-badge">
+            <span class="tag-pill">Gram Matrix Eigendecomposition</span>
+          </div>
+        </div>
+
+        <!-- Document Batch Field -->
+        <div class="form-group">
+          <label class="form-label" for="batch-sentences-input">
+            <span>Document Batch (3 Thematic Clusters)</span>
+            <span class="form-label-hint">Minimum 3 lines • Maximum 20 lines (1 per line)</span>
+          </label>
+          <div class="input-well-wrapper">
+            <textarea id="batch-sentences-input" class="monospace-textarea" rows="9" spellcheck="false">Orbital satellites launch into orbit around planetary celestial spheres.
+Rocket propulsion systems launch spacecraft into orbital space trajectories.
+Planetary astronomy satellites track cosmic orbits across deep space.
+Knead sourdough bread dough thoroughly for artisan yeast loaf baking.
+Bake artisan flour dough into crusty sourdough loaves in the oven.
+Pastry chefs bake sweet sourdough bread rolls in the bakery oven.
+Equity market traders exchange shares during volatile stock trading sessions.
+Financial market brokers trade equity shares and stock portfolio assets.
+Quantitative hedge funds execute stock market trades across financial exchange portfolios.</textarea>
+          </div>
+          <!-- Clean Inline Validation Notice (Replaces browser alert()) -->
+          <div id="batch-validation-notice" class="inline-notice" style="display: none;" role="alert"></div>
+        </div>
+
+        <!-- Actions -->
+        <div class="button-group">
+          <button id="btn-generate-projection" class="btn btn-accent" type="button">Generate 3D Projection</button>
+          <button id="btn-reset-batch" class="btn btn-secondary" type="button">Reset 9 Clustered Sentences</button>
+        </div>
+
+        <!-- Explanatory Technical Note -->
+        <div class="engine-note">
+          <strong>Engine Specification Note:</strong> This pipeline uses deterministic 64-dimensional FNV-1a feature hashing (whole word tokens weighted 1.0, boundary-padded character 3-grams weighted 0.35, and continuation subwords weighted 0.25) modulated by corpus-wide Inverse Document Frequency (IDF) and normalized to unit L2 norm. The 3D coordinates are extracted using an exact closed-form Dual PCA Jacobi eigensolver. It illustrates mathematical vector geometry and surface lexical alignment without deep neural transformers.
+        </div>
+
+        <!-- 3D Viewport Instrument Stage -->
+        <div class="viewport-card">
+          <div class="viewport-header">
+            <div class="viewport-meta">
+              <span id="variance-explained-pill" class="variance-pill">Variance Explained: PC₁-PC₃: 56.3%</span>
+              <span id="renderer-status-badge" class="renderer-badge webgl">● Renderer: Plotly WebGL</span>
+            </div>
+            <div>
+              <button id="btn-toggle-renderer" class="btn btn-secondary" style="padding: 4px 10px; font-size: 11px;" type="button">
+                Switch to Canvas 2D Fallback
+              </button>
+            </div>
+          </div>
+
+          <div class="viewport-stage">
+            <div id="plotly-container"></div>
+            <div id="canvas-container">
+              <canvas id="canvas-fallback"></canvas>
+              <div id="canvas-tooltip" class="canvas-tooltip">
+                <div id="tt-cluster" class="tt-cluster">Cluster 1</div>
+                <div id="tt-text" class="tt-text">Sentence text</div>
+                <div id="tt-coords" class="tt-coords">(0.00, 0.00, 0.00)</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="viewport-footer">
+            <div class="canvas-controls-hint">
+              <span>Controls: Drag to rotate • Wheel to zoom • Hover for telemetry</span>
+              <button id="btn-camera-reset-view" class="btn-camera-reset" type="button">Reset Camera View</button>
+            </div>
+            <div id="plot-point-count">9 points plotted (3 clusters)</div>
+          </div>
+        </div>
+
+        <!-- Top-5 Nearest Pairs Table -->
+        <div class="form-group" style="margin-bottom: var(--space-32);">
+          <label class="form-label">
+            <span>Top-5 Nearest Sentence Pairs (64-D Full Cosine Similarity)</span>
+            <span class="form-label-hint">Ranked by dot product of normalized vectors</span>
+          </label>
+          <div class="table-container">
+            <table class="spec-table" id="nearest-pairs-table">
+              <thead>
+                <tr>
+                  <th style="width: 60px;">Rank</th>
+                  <th>Sentence A</th>
+                  <th>Sentence B</th>
+                  <th style="width: 140px;" class="col-right">Cosine Similarity</th>
+                  <th style="width: 160px;">Thematic Alignment</th>
+                </tr>
+              </thead>
+              <tbody id="nearest-pairs-body">
+                <!-- Dynamically populated -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Live Query Sandbox Deck ("Probe the Vector Space") -->
+        <div class="query-sandbox-card">
+          <h3 class="query-header">Probe the Vector Space</h3>
+          <p class="query-caption">
+            Submit a novel sequence to project it into the exact same 3D coordinate space computed by the batch Dual PCA basis.
+          </p>
+
+          <div class="query-input-bar">
+            <input id="query-sentence-input" class="single-input" type="text" value="Baking sourdough bread in the oven" placeholder="Type a novel query sentence...">
+            <button id="btn-embed-query" class="btn btn-accent" type="button">Embed &amp; Plot Query</button>
+            <button id="btn-clear-query" class="btn btn-secondary" type="button" style="display: none;">Clear Query</button>
+          </div>
+
+          <!-- 3-Step Breakdown -->
+          <div id="query-breakdown-box" class="query-breakdown" style="display: none;">
+            <!-- Step 1: Subword Decomposition -->
+            <div class="breakdown-step">
+              <div class="step-title">
+                <span>Step 1: Subword Tokenization</span>
+                <span id="query-token-count-label" class="tag-pill">6 Tokens</span>
+              </div>
+              <div id="query-tokens-display" class="token-stream" style="min-height: 48px; background: var(--ground-card);">
+                <!-- Query chips -->
+              </div>
+            </div>
+
+            <!-- Step 2: 64-D Latent Vector Projection -->
+            <div class="breakdown-step">
+              <div class="step-title">
+                <span>Step 2: 64-D Latent Vector Representation (First 8 Dimensions)</span>
+                <span class="tag-pill">Unit L2 Norm = 1.0000</span>
+              </div>
+              <div id="query-vector-preview" class="vector-preview">
+                [ +0.000, +0.000, +0.000, +0.000, +0.000, +0.000, +0.000, +0.000 ... ]
+              </div>
+            </div>
+
+            <!-- Step 3: Nearest Batch Neighbors -->
+            <div class="breakdown-step">
+              <div class="step-title">
+                <span>Step 3: Top-3 Nearest Batch Sentences (Cosine Proximity)</span>
+                <span class="tag-pill">Cosine Metric</span>
+              </div>
+              <ul id="query-nearest-list" class="nearest-list">
+                <!-- Top 3 nearest -->
+              </ul>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <!-- COLOPHON FOOTER -->
+    <footer class="app-footer">
+      <div>
+        Neural Text &amp; Vector Workbench • Release 1.0 • Client-side Academic Specification
+      </div>
+      <div class="footer-links">
+        <a href="?selftest=true">Run Invariant Self-Test Suite (?selftest)</a>
+      </div>
+    </footer>
+  </div>
+
+  <!-- ==========================================================================
+       VANILLA JAVASCRIPT SYSTEM ENGINE (SINGLE SCRIPT ARCHITECTURE)
+       ========================================================================== */ -->
+  <script>
+    /* ==========================================================================
+       GLOBAL STATE & SHARED ENGINE CONTRACT
+       ========================================================================== */
+    window.WorkbenchEngine = {
+      version: "1.0",
+      tokenizer: null,
+      embedder: null
+    };
+
+    /* ==========================================================================
+       MODULE A: PURE TOKENIZATION LOGIC (Zero DOM Access)
+       ========================================================================== */
+    (function(Engine) {
+      "use strict";
+
+      const PRE_TOKEN_REGEX = /[a-z0-9]+|[^\sa-z0-9]/g;
+
+      /**
+       * Normalizes and pre-tokenizes raw string into lowercased atomic units.
+       */
+      function preTokenize(text) {
+        if (!text) return [];
+        const lower = String(text).toLowerCase();
+        const matches = lower.match(PRE_TOKEN_REGEX);
+        return matches ? matches : [];
+      }
+
+      /**
+       * Constructs vocabulary from a corpus string.
+       * 0: [UNK]
+       * 1..Y: Whole words & punctuation ranked by descending corpus frequency (alphabetical tie-break).
+       * Y+1..N: Single-character initial pieces (c) and continuation pieces (##c).
+       */
+      function buildVocabulary(corpusText) {
+        const units = preTokenize(corpusText);
+        const freqMap = Object.create(null);
+        const charSet = Object.create(null);
+
+        for (let i = 0; i < units.length; i++) {
+          const u = units[i];
+          freqMap[u] = (freqMap[u] || 0) + 1;
+          for (let j = 0; j < u.length; j++) {
+            charSet[u[j]] = true;
+          }
+        }
+
+        // Rank whole words by frequency descending, then alphabetical
+        const uniqueWords = Object.keys(freqMap).sort(function(a, b) {
+          const diff = freqMap[b] - freqMap[a];
+          if (diff !== 0) return diff;
+          return a.localeCompare(b);
+        });
+
+        const Y = uniqueWords.length;
+        const sortedChars = Object.keys(charSet).sort();
+        const charCount = sortedChars.length;
+
+        // Maps and entries
+        const wordVocab = Object.create(null);     // token -> { id, rank, freq }
+        const idToEntry = Object.create(null);     // id -> entry
+        const charInitVocab = Object.create(null); // char -> id
+        const charSubVocab = Object.create(null);  // ##char -> id
+
+        // ID 0: [UNK]
+        idToEntry[0] = { id: 0, token: "[UNK]", freq: 0, type: "special" };
+
+        // IDs 1..Y: Whole words
+        for (let i = 0; i < Y; i++) {
+          const w = uniqueWords[i];
+          const id = i + 1;
+          const entry = { id: id, token: w, freq: freqMap[w], type: "word", rank: id };
+          wordVocab[w] = entry;
+          idToEntry[id] = entry;
+        }
+
+        // IDs Y+1..Y+charCount: Single-char initial pieces
+        let nextId = Y + 1;
+        for (let i = 0; i < charCount; i++) {
+          const c = sortedChars[i];
+          charInitVocab[c] = nextId;
+          idToEntry[nextId] = { id: nextId, token: c, freq: 0, type: "init_char" };
+          nextId++;
+        }
+
+        // IDs Y+charCount+1..Y+2*charCount: Continuation pieces (##c)
+        for (let i = 0; i < charCount; i++) {
+          const c = sortedChars[i];
+          const sub = "##" + c;
+          charSubVocab[sub] = nextId;
+          idToEntry[nextId] = { id: nextId, token: sub, freq: 0, type: "sub_char" };
+          nextId++;
+        }
+
+        return {
+          Y: Y,
+          totalSize: nextId - 1,
+          wordVocab: wordVocab,
+          charInitVocab: charInitVocab,
+          charSubVocab: charSubVocab,
+          idToEntry: idToEntry,
+          uniqueWords: uniqueWords,
+          uniqueChars: sortedChars
+        };
+      }
+
+      /**
+       * Greedily tokenizes input text against active vocabulary.
+       * activeWholeWords: number of active whole words from 1 to Y (default Y).
+       */
+      function tokenize(text, vocabModel, activeWholeWords) {
+        if (!vocabModel) return [];
+        const maxActiveRank = typeof activeWholeWords === "number" ? activeWholeWords : vocabModel.Y;
+        const units = preTokenize(text);
+        const tokens = [];
+
+        for (let uIdx = 0; uIdx < units.length; uIdx++) {
+          const unit = units[uIdx];
+
+          // 1. Direct match if whole word is active
+          const wordEntry = vocabModel.wordVocab[unit];
+          if (wordEntry && wordEntry.rank <= maxActiveRank) {
+            tokens.push({
+              token: unit,
+              id: wordEntry.id,
+              kind: "word"
+            });
+            continue;
+          }
+
+          // 2. Greedy decomposition into subwords
+          const L = unit.length;
+          let matchedInit = false;
+          let initEnd = 0;
+          let initToken = null;
+
+          // Attempt longest active whole-word prefix
+          for (let k = L - 1; k >= 1; k--) {
+            const prefix = unit.slice(0, k);
+            const pEntry = vocabModel.wordVocab[prefix];
+            if (pEntry && pEntry.rank <= maxActiveRank) {
+              initToken = { token: prefix, id: pEntry.id, kind: "sub" };
+              matchedInit = true;
+              initEnd = k;
+              break;
+            }
+          }
+
+          // If no active word prefix, attempt single-character initial piece
+          if (!matchedInit) {
+            const firstChar = unit[0];
+            const initId = vocabModel.charInitVocab[firstChar];
+            if (typeof initId === "number") {
+              initToken = { token: firstChar, id: initId, kind: "sub" };
+              matchedInit = true;
+              initEnd = 1;
+            } else {
+              // Unseen first character -> collapse entire unit into [UNK]
+              tokens.push({ token: "[UNK]", id: 0, kind: "unk" });
+              continue;
+            }
+          }
+
+          // Match continuation pieces for remainder of unit
+          const subTokens = [initToken];
+          let curr = initEnd;
+          let failed = false;
+
+          while (curr < L) {
+            let matchedCont = false;
+            // Greedily match longest known continuation piece
+            for (let k = L - curr; k >= 1; k--) {
+              const contPiece = "##" + unit.slice(curr, curr + k);
+              const contId = vocabModel.charSubVocab[contPiece];
+              if (typeof contId === "number") {
+                subTokens.push({ token: contPiece, id: contId, kind: "sub" });
+                curr += k;
+                matchedCont = true;
+                break;
+              }
+            }
+
+            if (!matchedCont) {
+              failed = true;
+              break;
+            }
+          }
+
+          if (failed) {
+            // Unseen character in remainder -> collapse entire unit into single [UNK]
+            tokens.push({ token: "[UNK]", id: 0, kind: "unk" });
+          } else {
+            for (let s = 0; s < subTokens.length; s++) {
+              tokens.push(subTokens[s]);
+            }
+          }
+        }
+
+        return tokens;
+      }
+
+      Engine.tokenizer = {
+        build: buildVocabulary,
+        tokenize: tokenize,
+        preTokenize: preTokenize
+      };
+    })(window.WorkbenchEngine);
+
+    /* ==========================================================================
+       MODULE B: PURE VECTOR & PCA ENGINE (Zero DOM Access)
+       ========================================================================== */
+    (function(Engine) {
+      "use strict";
+
+      const VECTOR_DIM = 64;
+
+      /**
+       * 32-bit FNV-1a Hash function.
+       */
+      function fnv1a(str, seed) {
+        let h = (typeof seed === "number" ? seed : 0x811c9dc5) >>> 0;
+        for (let i = 0; i < str.length; i++) {
+          h ^= str.charCodeAt(i);
+          h = Math.imul(h, 0x01000193) >>> 0;
+        }
+        return h;
+      }
+
+      /**
+       * Secondary sign hash returning +1 or -1.
+       */
+      function secondarySignHash(str) {
+        const h = fnv1a(str, 0x84222325);
+        return (h & 1) === 1 ? 1.0 : -1.0;
+      }
+
+      /**
+       * Computes document frequency for all tokens in sentence batch.
+       */
+      function computeBatchDF(sentenceList, tokenizer, vocabModel) {
+        const N = sentenceList.length;
+        const dfMap = Object.create(null);
+
+        for (let i = 0; i < N; i++) {
+          const tokens = tokenizer.tokenize(sentenceList[i], vocabModel);
+          const seenInDoc = Object.create(null);
+          for (let j = 0; j < tokens.length; j++) {
+            const t = tokens[j].token;
+            if (!seenInDoc[t]) {
+              seenInDoc[t] = true;
+              dfMap[t] = (dfMap[t] || 0) + 1;
+            }
+          }
+        }
+
+        return {
+          N: N,
+          dfMap: dfMap,
+          maxIdf: Math.log((N + 1) / 1.0) + 1.0
+        };
+      }
+
+      /**
+       * Embeds a single sentence into a 64-D unit vector.
+       */
+      function embedSentence(sentence, tokenizer, vocabModel, batchDF) {
+        const vec = new Float64Array(VECTOR_DIM);
+        const tokens = tokenizer.tokenize(sentence, vocabModel);
+        if (tokens.length === 0) return vec;
+
+        const N = batchDF ? batchDF.N : 1;
+        const dfMap = batchDF ? batchDF.dfMap : null;
+        const maxIdf = batchDF ? batchDF.maxIdf : 2.0;
+
+        for (let i = 0; i < tokens.length; i++) {
+          const tok = tokens[i];
+          const tStr = tok.token;
+
+          // IDF weighting
+          let idf = maxIdf;
+          if (dfMap && typeof dfMap[tStr] === "number" && dfMap[tStr] > 0) {
+            idf = Math.log((N + 1) / (dfMap[tStr] + 1)) + 1.0;
+          }
+
+          // 1. Whole surface word feature (weight 1.0)
+          const featWord = "w:" + tStr;
+          const bucketWord = fnv1a(featWord) % VECTOR_DIM;
+          const signWord = secondarySignHash(featWord);
+          vec[bucketWord] += signWord * 1.0 * idf;
+
+          // 2. Boundary-padded character 3-grams (weight 0.35 normalized by count)
+          const rawUnit = tStr.replace(/^##/, "");
+          const padded = "<" + rawUnit + ">";
+          const nGramCount = Math.max(1, padded.length - 2);
+          const nGramWeight = 0.35 / nGramCount;
+
+          for (let g = 0; g < padded.length - 2; g++) {
+            const gram = padded.slice(g, g + 3);
+            const featGram = "3g:" + gram;
+            const bucketGram = fnv1a(featGram) % VECTOR_DIM;
+            const signGram = secondarySignHash(featGram);
+            vec[bucketGram] += signGram * nGramWeight * idf;
+          }
+
+          // 3. Subword continuation piece (weight 0.25)
+          if (tStr.slice(0, 2) === "##") {
+            const featSub = "sub:" + tStr;
+            const bucketSub = fnv1a(featSub) % VECTOR_DIM;
+            const signSub = secondarySignHash(featSub);
+            vec[bucketSub] += signSub * 0.25 * idf;
+          }
+        }
+
+        // L2 normalization to unit length
+        let sumSq = 0;
+        for (let d = 0; d < VECTOR_DIM; d++) {
+          sumSq += vec[d] * vec[d];
+        }
+
+        const norm = Math.sqrt(sumSq);
+        if (norm > 1e-12) {
+          const invNorm = 1.0 / norm;
+          for (let d = 0; d < VECTOR_DIM; d++) {
+            vec[d] *= invNorm;
+          }
+        }
+
+        return vec;
+      }
+
+      /**
+       * Cosine similarity between two unit vectors (simple dot product).
+       */
+      function cosineSimilarity(v1, v2) {
+        let dot = 0;
+        for (let d = 0; d < VECTOR_DIM; d++) {
+          dot += v1[d] * v2[d];
+        }
+        return dot;
+      }
+
+      /**
+       * Cyclic Jacobi eigensolver for symmetric N x N Gram matrix.
+       */
+      function cyclicJacobi(A, maxSweeps, tol) {
+        const n = A.length;
+        const sweeps = maxSweeps || 40;
+        const epsilon = tol || 1e-12;
+
+        // Initialize V as identity matrix
+        const V = [];
+        for (let i = 0; i < n; i++) {
+          V[i] = new Float64Array(n);
+          V[i][i] = 1.0;
+        }
+
+        // Deep copy A into D
+        const D = [];
+        for (let i = 0; i < n; i++) {
+          D[i] = new Float64Array(A[i]);
+        }
+
+        for (let s = 0; s < sweeps; s++) {
+          let maxOff = 0;
+
+          for (let p = 0; p < n - 1; p++) {
+            for (let q = p + 1; q < n; q++) {
+              const Apq = D[p][q];
+              const absApq = Math.abs(Apq);
+              if (absApq > maxOff) maxOff = absApq;
+              if (absApq < 1e-15) continue;
+
+              const App = D[p][p];
+              const Aqq = D[q][q];
+              const diff = Aqq - App;
+
+              let theta;
+              if (Math.abs(diff) < 1e-15) {
+                theta = Apq > 0 ? Math.PI / 4.0 : -Math.PI / 4.0;
+              } else {
+                theta = 0.5 * Math.atan2(2.0 * Apq, diff);
+              }
+
+              const c = Math.cos(theta);
+              const sn = Math.sin(theta);
+
+              // Update D
+              D[p][p] = c * c * App - 2.0 * sn * c * Apq + sn * sn * Aqq;
+              D[q][q] = sn * sn * App + 2.0 * sn * c * Apq + c * c * Aqq;
+              D[p][q] = 0.0;
+              D[q][p] = 0.0;
+
+              for (let k = 0; k < n; k++) {
+                if (k !== p && k !== q) {
+                  const Akp = D[k][p];
+                  const Akq = D[k][q];
+                  D[k][p] = c * Akp - sn * Akq;
+                  D[p][k] = D[k][p];
+                  D[k][q] = sn * Akp + c * Akq;
+                  D[q][k] = D[k][q];
+                }
+              }
+
+              // Update eigenvectors V
+              for (let k = 0; k < n; k++) {
+                const Vkp = V[k][p];
+                const Vkq = V[k][q];
+                V[k][p] = c * Vkp - sn * Vkq;
+                V[k][q] = sn * Vkp + c * Vkq;
+              }
+            }
+          }
+
+          if (maxOff < epsilon) break;
+        }
+
+        const eigenvalues = new Float64Array(n);
+        for (let i = 0; i < n; i++) {
+          eigenvalues[i] = D[i][i];
+        }
+
+        return { eigenvalues: eigenvalues, V: V };
+      }
+
+      /**
+       * Dual PCA 3-Component Dimensionality Reduction.
+       * Centering N x 64 -> N x N Gram Matrix -> Jacobi eigensolver -> Basis vectors.
+       */
+      function pca3(matrix) {
+        const N = matrix.length;
+        if (N < 3) {
+          throw new Error("Dual PCA requires at least 3 points");
+        }
+
+        // 1. Column means
+        const mean = new Float64Array(VECTOR_DIM);
+        for (let i = 0; i < N; i++) {
+          const row = matrix[i];
+          for (let d = 0; d < VECTOR_DIM; d++) {
+            mean[d] += row[d];
+          }
+        }
+        for (let d = 0; d < VECTOR_DIM; d++) {
+          mean[d] /= N;
+        }
+
+        // 2. Centered matrix X_c
+        const Xc = [];
+        for (let i = 0; i < N; i++) {
+          const row = new Float64Array(VECTOR_DIM);
+          for (let d = 0; d < VECTOR_DIM; d++) {
+            row[d] = matrix[i][d] - mean[d];
+          }
+          Xc.push(row);
+        }
+
+        // 3. Construct N x N Gram Matrix K = Xc * Xc^T
+        const K = [];
+        for (let i = 0; i < N; i++) {
+          K[i] = new Float64Array(N);
+          for (let j = 0; j <= i; j++) {
+            let dot = 0;
+            for (let d = 0; d < VECTOR_DIM; d++) {
+              dot += Xc[i][d] * Xc[j][d];
+            }
+            K[i][j] = dot;
+            K[j][i] = dot;
+          }
+        }
+
+        // 4. Jacobi decomposition
+        const jacobi = cyclicJacobi(K, 40, 1e-12);
+        const pairs = [];
+        for (let i = 0; i < N; i++) {
+          const lam = Math.max(0, jacobi.eigenvalues[i]);
+          const colV = new Float64Array(N);
+          for (let r = 0; r < N; r++) {
+            colV[r] = jacobi.V[r][i];
+          }
+          pairs.push({ lam: lam, v: colV });
+        }
+
+        // Sort descending by eigenvalue
+        pairs.sort(function(a, b) { return b.lam - a.lam; });
+
+        let totalVariance = 0;
+        for (let i = 0; i < N; i++) {
+          totalVariance += pairs[i].lam;
+        }
+
+        // 5. Construct top-3 basis vectors in 64-D space
+        const basis3 = [];
+        const eigenvalues3 = [];
+
+        for (let k = 0; k < 3; k++) {
+          const lam = pairs[k].lam;
+          eigenvalues3.push(lam);
+          const w = new Float64Array(VECTOR_DIM);
+
+          if (lam > 1e-10) {
+            const scale = 1.0 / Math.sqrt(lam);
+            for (let i = 0; i < N; i++) {
+              const vi = pairs[k].v[i];
+              for (let d = 0; d < VECTOR_DIM; d++) {
+                w[d] += vi * Xc[i][d];
+              }
+            }
+            for (let d = 0; d < VECTOR_DIM; d++) {
+              w[d] *= scale;
+            }
+          }
+          basis3.push(w);
+        }
+
+        // 6. Projections for training data points
+        const projections = [];
+        for (let i = 0; i < N; i++) {
+          const pt = [0, 0, 0];
+          for (let k = 0; k < 3; k++) {
+            let z = 0;
+            for (let d = 0; d < VECTOR_DIM; d++) {
+              z += Xc[i][d] * basis3[k][d];
+            }
+            pt[k] = z;
+          }
+          projections.push(pt);
+        }
+
+        // Percentage explained variance
+        let varRatio = 100.0;
+        if (totalVariance > 1e-10) {
+          const top3Var = eigenvalues3[0] + eigenvalues3[1] + eigenvalues3[2];
+          varRatio = Math.min(100.0, (top3Var / totalVariance) * 100.0);
+        }
+
+        return {
+          mean: mean,
+          basis3: basis3,
+          eigenvalues3: eigenvalues3,
+          totalVariance: totalVariance,
+          percentExplained: varRatio,
+          projections: projections,
+          project: function(vector) {
+            const z = [0, 0, 0];
+            for (let k = 0; k < 3; k++) {
+              let dot = 0;
+              for (let d = 0; d < VECTOR_DIM; d++) {
+                dot += (vector[d] - mean[d]) * basis3[k][d];
+              }
+              z[k] = dot;
+            }
+            return z;
+          }
+        };
+      }
+
+      Engine.embedder = {
+        name: "FNV1a-DualPCA",
+        dim: VECTOR_DIM,
+        fnv1a: fnv1a,
+        computeBatchDF: computeBatchDF,
+        embedSentence: embedSentence,
+        cosineSimilarity: cosineSimilarity,
+        pca3: pca3
+      };
+    })(window.WorkbenchEngine);
+
+    /* ==========================================================================
+       MODULE C: UI CONTROLLER - SUBWORD TOKENIZER LAB (#tokenizer-lab)
+       ========================================================================== */
+    (function(Engine) {
+      "use strict";
+
+      let activeVocabModel = null;
+      let initialCorpusText = "";
+      let isSliderPending = false;
+
+      // DOM Elements
+      const corpusInput = document.getElementById("training-corpus-input");
+      const testInput = document.getElementById("test-sentence-input");
+      const btnTrain = document.getElementById("btn-train-vocab");
+      const btnRun = document.getElementById("btn-run-tokenizer");
+      const btnReset = document.getElementById("btn-reset-tokenizer");
+      const corpusWarning = document.getElementById("corpus-warning");
+      const sliderContainer = document.getElementById("vocab-slider-container");
+      const vocabSlider = document.getElementById("vocab-size-slider");
+      const sliderCountLabel = document.getElementById("slider-count-label");
+      
+      const metricChar = document.getElementById("metric-char-count");
+      const metricToken = document.getElementById("metric-token-count");
+      const metricCompress = document.getElementById("metric-compression");
+      const chipsDisplay = document.getElementById("token-chips-display");
+      const inspectorTableBody = document.getElementById("vocab-table-body");
+      const inspectorCountLabel = document.getElementById("inspector-count-label");
+
+      // Default Corpus Sentences
+      const DEFAULT_CORPUS = [
+        "The rover landed on the red planet.",
+        "The rocket launched into deep space.",
+        "Astronauts orbit the Earth in a station.",
+        "A telescope can see distant stars and moons.",
+        "Do you study astronomy or physics?",
+        "I don't see the moon, but I see the bright stars."
+      ].join("\n");
+
+      const DEFAULT_TEST = "The rockets orbited the starry galaxy.";
+
+      /**
+       * Safe helper to construct DOM nodes without innerHTML injection.
+       */
+      function createEl(tag, className, textContent) {
+        const el = document.createElement(tag);
+        if (className) el.className = className;
+        if (typeof textContent !== "undefined") el.textContent = textContent;
+        return el;
+      }
+
+      /**
+       * Render token chips into container.
+       */
+      function renderTokenChips(tokens, container) {
+        while (container.firstChild) {
+          container.removeChild(container.firstChild);
+        }
+
+        if (!tokens || tokens.length === 0) {
+          const empty = createEl("span", "metric-sub", "No tokens produced");
+          container.appendChild(empty);
+          return;
+        }
+
+        for (let i = 0; i < tokens.length; i++) {
+          const t = tokens[i];
+          const chip = createEl("div", "token-chip kind-" + t.kind);
+          
+          const textSpan = createEl("span", "chip-text", t.token);
+          const idSpan = createEl("span", "chip-id", "#" + t.id);
+
+          chip.appendChild(textSpan);
+          chip.appendChild(idSpan);
+          container.appendChild(chip);
+        }
+      }
+
+      /**
+       * Render Vocabulary Inspector Table.
+       */
+      function renderInspectorTable(vocabModel, activeCount) {
+        while (inspectorTableBody.firstChild) {
+          inspectorTableBody.removeChild(inspectorTableBody.firstChild);
+        }
+
+        inspectorCountLabel.textContent = "Showing " + activeCount + " active words of " + vocabModel.Y + " total whole words";
+
+        // Whole words (1..Y)
+        for (let i = 0; i < vocabModel.uniqueWords.length; i++) {
+          const w = vocabModel.uniqueWords[i];
+          const entry = vocabModel.wordVocab[w];
+          const isActive = entry.rank <= activeCount;
+
+          const row = document.createElement("tr");
+
+          const tdId = createEl("td", "col-mono", String(entry.id));
+          const tdToken = createEl("td", "col-mono", entry.token);
+          const tdFreq = createEl("td", "col-mono col-right", String(entry.freq));
+          
+          const tdStatus = document.createElement("td");
+          const badge = createEl("span", "status-badge " + (isActive ? "active" : "dropped"), isActive ? "Active" : "Dropped");
+          tdStatus.appendChild(badge);
+
+          row.appendChild(tdId);
+          row.appendChild(tdToken);
+          row.appendChild(tdFreq);
+          row.appendChild(tdStatus);
+          inspectorTableBody.appendChild(row);
+        }
+
+        // Sample of character pieces
+        for (let i = 0; i < vocabModel.uniqueChars.length; i++) {
+          const c = vocabModel.uniqueChars[i];
+          const initId = vocabModel.charInitVocab[c];
+          const subId = vocabModel.charSubVocab["##" + c];
+
+          // Initial piece
+          const row1 = document.createElement("tr");
+          row1.appendChild(createEl("td", "col-mono", String(initId)));
+          row1.appendChild(createEl("td", "col-mono", c));
+          row1.appendChild(createEl("td", "col-mono col-right", "—"));
+          const tdSt1 = document.createElement("td");
+          tdSt1.appendChild(createEl("span", "status-badge char", "Char Init"));
+          row1.appendChild(tdSt1);
+          inspectorTableBody.appendChild(row1);
+
+          // Continuation piece
+          const row2 = document.createElement("tr");
+          row2.appendChild(createEl("td", "col-mono", String(subId)));
+          row2.appendChild(createEl("td", "col-mono", "##" + c));
+          row2.appendChild(createEl("td", "col-mono col-right", "—"));
+          const tdSt2 = document.createElement("td");
+          tdSt2.appendChild(createEl("span", "status-badge char", "Char Sub"));
+          row2.appendChild(tdSt2);
+          inspectorTableBody.appendChild(row2);
+        }
+      }
+
+      /**
+       * Re-evaluates tokenization on the current test input.
+       */
+      function evaluateTokenizer() {
+        if (!activeVocabModel) return;
+
+        const currentActiveWholeWords = parseInt(vocabSlider.value, 10);
+        sliderCountLabel.textContent = "Active whole words: " + currentActiveWholeWords + " of " + activeVocabModel.Y;
+
+        const rawText = testInput.value;
+        const tokens = Engine.tokenizer.tokenize(rawText, activeVocabModel, currentActiveWholeWords);
+
+        // Update telemetry
+        const charLen = rawText.length;
+        const tokenLen = tokens.length;
+        const ratio = tokenLen > 0 ? (charLen / tokenLen).toFixed(2) : "0.00";
+
+        metricChar.textContent = String(charLen);
+        metricToken.textContent = String(tokenLen);
+        metricCompress.textContent = ratio;
+
+        // Render chips
+        renderTokenChips(tokens, chipsDisplay);
+
+        // Update inspector table status
+        renderInspectorTable(activeVocabModel, currentActiveWholeWords);
+      }
+
+      /**
+       * Trains vocabulary model from textarea.
+       */
+      function trainVocabulary() {
+        const text = corpusInput.value;
+        initialCorpusText = text;
+        corpusWarning.classList.add("hidden");
+
+        activeVocabModel = Engine.tokenizer.build(text);
+
+        // Configure slider
+        vocabSlider.min = "1";
+        vocabSlider.max = String(activeVocabModel.Y);
+        vocabSlider.value = String(activeVocabModel.Y);
+        sliderContainer.style.display = "block";
+        btnRun.disabled = false;
+
+        evaluateTokenizer();
+      }
+
+      // Event Listeners
+      btnTrain.addEventListener("click", trainVocabulary);
+
+      btnRun.addEventListener("click", evaluateTokenizer);
+
+      btnReset.addEventListener("click", function() {
+        corpusInput.value = DEFAULT_CORPUS;
+        testInput.value = DEFAULT_TEST;
+        trainVocabulary();
+      });
+
+      corpusInput.addEventListener("input", function() {
+        if (activeVocabModel && corpusInput.value !== initialCorpusText) {
+          corpusWarning.classList.remove("hidden");
+        } else {
+          corpusWarning.classList.add("hidden");
+        }
+      });
+
+      testInput.addEventListener("input", function() {
+        if (activeVocabModel) {
+          evaluateTokenizer();
+        }
+      });
+
+      // Throttled slider handler using requestAnimationFrame
+      vocabSlider.addEventListener("input", function() {
+        if (!isSliderPending) {
+          isSliderPending = true;
+          window.requestAnimationFrame(function() {
+            evaluateTokenizer();
+            isSliderPending = false;
+          });
+        }
+      });
+
+      // Initial auto-train
+      trainVocabulary();
+
+    })(window.WorkbenchEngine);
+
+    /* ==========================================================================
+       MODULE D: UI CONTROLLER - 3D SEMANTIC VECTOR SPACE (#vector-space-lab)
+       ========================================================================== */
+    (function(Engine) {
+      "use strict";
+
+      const BATCH_INPUT = document.getElementById("batch-sentences-input");
+      const BATCH_NOTICE = document.getElementById("batch-validation-notice");
+      const BTN_GENERATE = document.getElementById("btn-generate-projection");
+      const BTN_RESET_BATCH = document.getElementById("btn-reset-batch");
+      const BTN_TOGGLE_RENDERER = document.getElementById("btn-toggle-renderer");
+      const BTN_CAMERA_RESET = document.getElementById("btn-camera-reset-view");
+      
+      const PLOTLY_CONTAINER = document.getElementById("plotly-container");
+      const CANVAS_CONTAINER = document.getElementById("canvas-container");
+      const CANVAS_EL = document.getElementById("canvas-fallback");
+      const CANVAS_TOOLTIP = document.getElementById("canvas-tooltip");
+      const TT_CLUSTER = document.getElementById("tt-cluster");
+      const TT_TEXT = document.getElementById("tt-text");
+      const TT_COORDS = document.getElementById("tt-coords");
+
+      const VARIANCE_PILL = document.getElementById("variance-explained-pill");
+      const RENDERER_BADGE = document.getElementById("renderer-status-badge");
+      const POINT_COUNT_LABEL = document.getElementById("plot-point-count");
+      const NEAREST_PAIRS_BODY = document.getElementById("nearest-pairs-body");
+
+      // Query Sandbox DOM
+      const QUERY_INPUT = document.getElementById("query-sentence-input");
+      const BTN_EMBED_QUERY = document.getElementById("btn-embed-query");
+      const BTN_CLEAR_QUERY = document.getElementById("btn-clear-query");
+      const QUERY_BREAKDOWN_BOX = document.getElementById("query-breakdown-box");
+      const QUERY_TOKEN_COUNT_LABEL = document.getElementById("query-token-count-label");
+      const QUERY_TOKENS_DISPLAY = document.getElementById("query-tokens-display");
+      const QUERY_VECTOR_PREVIEW = document.getElementById("query-vector-preview");
+      const QUERY_NEAREST_LIST = document.getElementById("query-nearest-list");
+
+      // Clustered Colors (Matching CSS semantic variables)
+      const CLUSTER_COLORS = ["#1d4ed8", "#15803d", "#6b21a8"];
+      const QUERY_COLOR = "#b84214";
+
+      // State
+      let activeBatchSentences = [];
+      let activeBatchVectors = [];
+      let activeBatchDF = null;
+      let activePCAModel = null;
+      let activeBridgeVocab = null;
+
+      let currentQuerySentence = null;
+      let currentQueryVector = null;
+      let currentQueryProjection = null;
+
+      let useCanvasFallback = false;
+      let isWebGLSupported = null;
+
+      // Canvas 2D Camera & Interaction State
+      const camera = {
+        azimuth: -0.65,
+        elevation: 0.35,
+        distance: 3.4,
+        isDragging: false,
+        lastMouseX: 0,
+        lastMouseY: 0,
+        hoveredPoint: null
+      };
+
+      /**
+       * Check WebGL availability.
+       */
+      function checkWebGL() {
+        if (isWebGLSupported !== null) return isWebGLSupported;
+        try {
+          const testCanvas = document.createElement("canvas");
+          isWebGLSupported = !!(window.WebGLRenderingContext &&
+            (testCanvas.getContext("webgl") || testCanvas.getContext("experimental-webgl")));
+        } catch (e) {
+          isWebGLSupported = false;
+        }
+        return isWebGLSupported;
+      }
+
+      /**
+       * Display non-intrusive inline validation notice (replacing browser alert()).
+       */
+      function showBatchNotice(message, type) {
+        if (!BATCH_NOTICE) return;
+        BATCH_NOTICE.textContent = message;
+        BATCH_NOTICE.className = "inline-notice " + (type || "error");
+        BATCH_NOTICE.style.display = "flex";
+      }
+
+      function clearBatchNotice() {
+        if (!BATCH_NOTICE) return;
+        BATCH_NOTICE.style.display = "none";
+        BATCH_NOTICE.textContent = "";
+      }
+
+      /**
+       * Parse sentences from textarea (capped between 3 and 20 lines).
+       */
+      function parseBatchSentences() {
+        clearBatchNotice();
+        const raw = BATCH_INPUT.value;
+        const lines = raw.split(/\r?\n/).map(function(s) { return s.trim(); }).filter(function(s) { return s.length > 0; });
+        if (lines.length > 20) {
+          showBatchNotice("Notice: Document batch automatically capped to the first 20 sentences for optimal PCA projection.", "info");
+          return lines.slice(0, 20);
+        }
+        return lines;
+      }
+
+      /**
+       * Tokenization Bridge: Ensure vocabulary contains all terms from batch sentences.
+       */
+      function ensureBridgeVocab(sentences) {
+        const combinedCorpus = sentences.join(" ");
+        activeBridgeVocab = Engine.tokenizer.build(combinedCorpus);
+        return activeBridgeVocab;
+      }
+
+      /**
+       * Safe helper to construct DOM nodes without innerHTML injection.
+       */
+      function createEl(tag, className, textContent) {
+        const el = document.createElement(tag);
+        if (className) el.className = className;
+        if (typeof textContent !== "undefined") el.textContent = textContent;
+        return el;
+      }
+
+      /**
+       * Compute and populate Top-5 Nearest Sentence Pairs table.
+       */
+      function renderTop5NearestPairs(sentences, vectors) {
+        while (NEAREST_PAIRS_BODY.firstChild) {
+          NEAREST_PAIRS_BODY.removeChild(NEAREST_PAIRS_BODY.firstChild);
+        }
+
+        const pairs = [];
+        const N = sentences.length;
+
+        for (let i = 0; i < N - 1; i++) {
+          for (let j = i + 1; j < N; j++) {
+            const sim = Engine.embedder.cosineSimilarity(vectors[i], vectors[j]);
+            pairs.push({
+              i: i,
+              j: j,
+              sentenceA: sentences[i],
+              sentenceB: sentences[j],
+              sim: sim
+            });
+          }
+        }
+
+        pairs.sort(function(a, b) { return b.sim - a.sim; });
+        const top5 = pairs.slice(0, 5);
+
+        for (let p = 0; p < top5.length; p++) {
+          const item = top5[p];
+          const row = document.createElement("tr");
+
+          const tdRank = createEl("td", "col-mono", "#" + (p + 1));
+          
+          const tdA = createEl("td", "", item.sentenceA);
+          tdA.style.maxWidth = "240px";
+          tdA.style.fontSize = "12px";
+
+          const tdB = createEl("td", "", item.sentenceB);
+          tdB.style.maxWidth = "240px";
+          tdB.style.fontSize = "12px";
+
+          const tdSim = createEl("td", "col-mono col-right", item.sim.toFixed(4));
+          
+          // Determine cluster alignment
+          const cA = Math.floor(item.i / 3) + 1;
+          const cB = Math.floor(item.j / 3) + 1;
+          const isSameCluster = cA === cB;
+
+          const tdAlign = document.createElement("td");
+          const tag = createEl("span", "status-badge " + (isSameCluster ? "active" : "char"),
+            isSameCluster ? "Cluster " + cA + " (Intra)" : "Cross-Cluster");
+          tdAlign.appendChild(tag);
+
+          row.appendChild(tdRank);
+          row.appendChild(tdA);
+          row.appendChild(tdB);
+          row.appendChild(tdSim);
+          row.appendChild(tdAlign);
+
+          NEAREST_PAIRS_BODY.appendChild(row);
+        }
+      }
+
+      /* ========================================================================
+         3D RENDERER IMPLEMENTATION: PLOTLY.JS + CANVAS 2D FALLBACK
+         ======================================================================== */
+
+      /**
+       * Determines active renderer mode.
+       */
+      function isPlotlyUsable() {
+        return !useCanvasFallback && typeof window.Plotly !== "undefined" && !window.plotlyFailed && checkWebGL();
+      }
+
+      function updateRendererBadge() {
+        if (isPlotlyUsable()) {
+          RENDERER_BADGE.className = "renderer-badge webgl";
+          RENDERER_BADGE.textContent = "● Renderer: Plotly WebGL";
+          BTN_TOGGLE_RENDERER.textContent = "Switch to Canvas 2D Fallback";
+          PLOTLY_CONTAINER.style.display = "block";
+          CANVAS_CONTAINER.style.display = "none";
+        } else {
+          RENDERER_BADGE.className = "renderer-badge canvas";
+          RENDERER_BADGE.textContent = "● Renderer: Canvas 2D Fallback";
+          BTN_TOGGLE_RENDERER.textContent = "Switch to WebGL (Plotly)";
+          PLOTLY_CONTAINER.style.display = "none";
+          CANVAS_CONTAINER.style.display = "block";
+        }
+      }
+
+      /**
+       * Render via Plotly.js.
+       */
+      function renderPlotly() {
+        if (!activePCAModel) return;
+
+        const traces = [];
+        const N = activeBatchSentences.length;
+
+        // Group into clusters of 3
+        const clusterGroups = [[], [], []];
+        for (let i = 0; i < N; i++) {
+          const cIdx = Math.min(2, Math.floor(i / 3));
+          clusterGroups[cIdx].push(i);
+        }
+
+        const clusterNames = [
+          "Cluster 1: Astrophysics & Space",
+          "Cluster 2: Culinary Baking",
+          "Cluster 3: Financial Markets"
+        ];
+
+        for (let c = 0; c < 3; c++) {
+          const indices = clusterGroups[c];
+          if (indices.length === 0) continue;
+
+          const x = [];
+          const y = [];
+          const z = [];
+          const hover = [];
+          const labels = [];
+
+          for (let k = 0; k < indices.length; k++) {
+            const idx = indices[k];
+            const pt = activePCAModel.projections[idx];
+            x.push(pt[0]);
+            y.push(pt[1]);
+            z.push(pt[2]);
+            labels.push("S" + (idx + 1));
+            hover.push("<b>[S" + (idx + 1) + "]</b> " + activeBatchSentences[idx] +
+              "<br><i>(" + pt[0].toFixed(3) + ", " + pt[1].toFixed(3) + ", " + pt[2].toFixed(3) + ")</i>");
+          }
+
+          traces.push({
+            name: clusterNames[c],
+            type: "scatter3d",
+            mode: "markers+text",
+            x: x,
+            y: y,
+            z: z,
+            text: labels,
+            textposition: "top center",
+            textfont: { family: "monospace", size: 10, color: "#141312" },
+            hoverinfo: "text",
+            hovertext: hover,
+            marker: {
+              size: 6,
+              color: CLUSTER_COLORS[c],
+              opacity: 0.95,
+              line: { color: "#ffffff", width: 1.5 }
+            }
+          });
+        }
+
+        // Add Query trace if active
+        if (currentQueryProjection) {
+          traces.push({
+            name: "Custom Query",
+            type: "scatter3d",
+            mode: "markers+text",
+            x: [currentQueryProjection[0]],
+            y: [currentQueryProjection[1]],
+            z: [currentQueryProjection[2]],
+            text: ["Query"],
+            textposition: "top center",
+            textfont: { family: "monospace", size: 11, color: QUERY_COLOR, weight: "bold" },
+            hoverinfo: "text",
+            hovertext: ["<b>[QUERY]</b> " + currentQuerySentence +
+              "<br><i>(" + currentQueryProjection[0].toFixed(3) + ", " + currentQueryProjection[1].toFixed(3) + ", " + currentQueryProjection[2].toFixed(3) + ")</i>"],
+            marker: {
+              size: 9,
+              symbol: "diamond",
+              color: QUERY_COLOR,
+              opacity: 1.0,
+              line: { color: "#ffffff", width: 2 }
+            }
+          });
+        }
+
+        const layout = {
+          paper_bgcolor: "#ffffff",
+          plot_bgcolor: "#ffffff",
+          margin: { l: 0, r: 0, b: 0, t: 0 },
+          showlegend: true,
+          legend: {
+            x: 0.02,
+            y: 0.98,
+            font: { family: "-apple-system, sans-serif", size: 11, color: "#141312" },
+            bgcolor: "rgba(255, 255, 255, 0.85)",
+            bordercolor: "#e3ded5",
+            borderwidth: 1
+          },
+          scene: {
+            xaxis: {
+              title: "PC₁",
+              gridcolor: "#e3ded5",
+              zerolinecolor: "#141312",
+              backgroundcolor: "#ffffff",
+              showbackground: true
+            },
+            yaxis: {
+              title: "PC₂",
+              gridcolor: "#e3ded5",
+              zerolinecolor: "#141312",
+              backgroundcolor: "#ffffff",
+              showbackground: true
+            },
+            zaxis: {
+              title: "PC₃",
+              gridcolor: "#e3ded5",
+              zerolinecolor: "#141312",
+              backgroundcolor: "#ffffff",
+              showbackground: true
+            },
+            camera: {
+              eye: { x: 1.5, y: 1.5, z: 1.2 }
+            }
+          }
+        };
+
+        const config = {
+          responsive: true,
+          displayModeBar: true,
+          displaylogo: false,
+          modeBarButtonsToRemove: ["lasso2d", "select2d"]
+        };
+
+        window.Plotly.react("plotly-container", traces, layout, config);
+      }
+
+      /* ========================================================================
+         CANVAS 2D FALLBACK RENDERER
+         ======================================================================== */
+
+      /**
+       * Initializes and renders 3D projection on HTML5 Canvas.
+       */
+      function renderCanvas2D() {
+        if (!activePCAModel) return;
+
+        const ctx = CANVAS_EL.getContext("2d");
+        const rect = CANVAS_CONTAINER.getBoundingClientRect();
+        const dpr = window.devicePixelRatio || 1;
+
+        CANVAS_EL.width = rect.width * dpr;
+        CANVAS_EL.height = rect.height * dpr;
+        ctx.scale(dpr, dpr);
+
+        const width = rect.width;
+        const height = rect.height;
+        ctx.clearRect(0, 0, width, height);
+
+        // Precompute projection normalizer
+        let maxCoord = 0.001;
+        for (let i = 0; i < activePCAModel.projections.length; i++) {
+          const pt = activePCAModel.projections[i];
+          maxCoord = Math.max(maxCoord, Math.abs(pt[0]), Math.abs(pt[1]), Math.abs(pt[2]));
+        }
+        if (currentQueryProjection) {
+          maxCoord = Math.max(maxCoord, Math.abs(currentQueryProjection[0]), Math.abs(currentQueryProjection[1]), Math.abs(currentQueryProjection[2]));
+        }
+
+        const scale3D = 1.2 / maxCoord;
+
+        // Camera trigonometric terms
+        const cosAz = Math.cos(camera.azimuth);
+        const sinAz = Math.sin(camera.azimuth);
+        const cosEl = Math.cos(camera.elevation);
+        const sinEl = Math.sin(camera.elevation);
+
+        function project3D(x, y, z) {
+          const sx = x * scale3D;
+          const sy = y * scale3D;
+          const sz = z * scale3D;
+
+          // Rotate Azimuth (around Y)
+          const x1 = sx * cosAz + sz * sinAz;
+          const y1 = sy;
+          const z1 = -sx * sinAz + sz * cosAz;
+
+          // Rotate Elevation (around X)
+          const x2 = x1;
+          const y2 = y1 * cosEl - z1 * sinEl;
+          const z2 = y1 * sinEl + z1 * cosEl + camera.distance;
+
+          const fov = 420;
+          const screenX = width / 2 + (x2 / z2) * fov;
+          const screenY = height / 2 - (y2 / z2) * fov;
+
+          return { x: screenX, y: screenY, zDepth: z2 };
+        }
+
+        // Draw Coordinate Axes (Origin to +1.0)
+        const origin = project3D(0, 0, 0);
+        const axisLen = maxCoord * 0.9;
+        const axisX = project3D(axisLen, 0, 0);
+        const axisY = project3D(0, axisLen, 0);
+        const axisZ = project3D(0, 0, axisLen);
+
+        function drawAxis(pStart, pEnd, label, color) {
+          ctx.beginPath();
+          ctx.moveTo(pStart.x, pStart.y);
+          ctx.lineTo(pEnd.x, pEnd.y);
+          ctx.strokeStyle = color;
+          ctx.lineWidth = 1.2;
+          ctx.stroke();
+
+          ctx.fillStyle = color;
+          ctx.font = "bold 10px monospace";
+          ctx.fillText(label, pEnd.x + 4, pEnd.y + 3);
+        }
+
+        drawAxis(origin, axisX, "PC₁", "#94a3b8");
+        drawAxis(origin, axisY, "PC₂", "#94a3b8");
+        drawAxis(origin, axisZ, "PC₃", "#94a3b8");
+
+        // Collect all drawable points
+        const drawablePoints = [];
+        const N = activeBatchSentences.length;
+
+        for (let i = 0; i < N; i++) {
+          const rawPt = activePCAModel.projections[i];
+          const proj = project3D(rawPt[0], rawPt[1], rawPt[2]);
+          const cIdx = Math.min(2, Math.floor(i / 3));
+
+          drawablePoints.push({
+            type: "batch",
+            index: i,
+            label: "S" + (i + 1),
+            text: activeBatchSentences[i],
+            clusterName: "Cluster " + (cIdx + 1),
+            color: CLUSTER_COLORS[cIdx],
+            raw: rawPt,
+            proj: proj
+          });
+        }
+
+        if (currentQueryProjection) {
+          const qProj = project3D(currentQueryProjection[0], currentQueryProjection[1], currentQueryProjection[2]);
+          drawablePoints.push({
+            type: "query",
+            index: -1,
+            label: "Query",
+            text: currentQuerySentence,
+            clusterName: "Custom User Query",
+            color: QUERY_COLOR,
+            raw: currentQueryProjection,
+            proj: qProj
+          });
+        }
+
+        // Depth sorting (painter's algorithm)
+        drawablePoints.sort(function(a, b) { return b.proj.zDepth - a.proj.zDepth; });
+
+        // Draw points
+        for (let p = 0; p < drawablePoints.length; p++) {
+          const item = drawablePoints[p];
+          const px = item.proj.x;
+          const py = item.proj.y;
+
+          if (item.type === "query") {
+            // Draw Diamond for query
+            ctx.save();
+            ctx.translate(px, py);
+            ctx.rotate(Math.PI / 4);
+            ctx.fillStyle = QUERY_COLOR;
+            ctx.fillRect(-6, -6, 12, 12);
+            ctx.strokeStyle = "#ffffff";
+            ctx.lineWidth = 2;
+            ctx.strokeRect(-6, -6, 12, 12);
+            ctx.restore();
+
+            // Label
+            ctx.fillStyle = QUERY_COLOR;
+            ctx.font = "bold 11px monospace";
+            ctx.fillText("Query", px + 9, py + 4);
+          } else {
+            // Circle for batch points
+            ctx.beginPath();
+            ctx.arc(px, py, 5, 0, Math.PI * 2);
+            ctx.fillStyle = item.color;
+            ctx.fill();
+            ctx.strokeStyle = "#ffffff";
+            ctx.lineWidth = 1.5;
+            ctx.stroke();
+
+            // Label badge
+            ctx.fillStyle = "#141312";
+            ctx.font = "10px monospace";
+            ctx.fillText(item.label, px + 8, py + 3);
+          }
+        }
+
+        // Draw Legend in Canvas
+        const legendX = 14;
+        let legendY = 18;
+        const legendItems = [
+          { name: "Cluster 1: Space", color: CLUSTER_COLORS[0] },
+          { name: "Cluster 2: Baking", color: CLUSTER_COLORS[1] },
+          { name: "Cluster 3: Finance", color: CLUSTER_COLORS[2] }
+        ];
+
+        if (currentQueryProjection) {
+          legendItems.push({ name: "Custom Query", color: QUERY_COLOR });
+        }
+
+        for (let l = 0; l < legendItems.length; l++) {
+          const li = legendItems[l];
+          ctx.beginPath();
+          ctx.arc(legendX, legendY, 4, 0, Math.PI * 2);
+          ctx.fillStyle = li.color;
+          ctx.fill();
+
+          ctx.fillStyle = "#575249";
+          ctx.font = "11px -apple-system, sans-serif";
+          ctx.fillText(li.name, legendX + 10, legendY + 4);
+          legendY += 18;
+        }
+
+        // Store active points for hit testing
+        camera.drawablePoints = drawablePoints;
+      }
+
+      /**
+       * Primary Dispatcher: Renders current 3D state using active renderer.
+       */
+      function refresh3DPlot() {
+        updateRendererBadge();
+        if (isPlotlyUsable()) {
+          renderPlotly();
+        } else {
+          renderCanvas2D();
+        }
+      }
+
+      /**
+       * Generates 3D projection from document batch.
+       */
+      function generateProjection() {
+        const sentences = parseBatchSentences();
+        if (sentences.length < 3) {
+          showBatchNotice("Error: Please provide at least 3 non-empty sentences to construct a 3D coordinate space.", "error");
+          return;
+        }
+
+        activeBatchSentences = sentences;
+        POINT_COUNT_LABEL.textContent = sentences.length + " points plotted (3 clusters)";
+
+        // Ensure tokenization bridge
+        const vocab = ensureBridgeVocab(sentences);
+
+        // Compute batch DF
+        activeBatchDF = Engine.embedder.computeBatchDF(sentences, Engine.tokenizer, vocab);
+
+        // Embed each sentence into 64-D vector
+        activeBatchVectors = [];
+        for (let i = 0; i < sentences.length; i++) {
+          const vec = Engine.embedder.embedSentence(sentences[i], Engine.tokenizer, vocab, activeBatchDF);
+          activeBatchVectors.push(vec);
+        }
+
+        // Solve Dual PCA
+        activePCAModel = Engine.embedder.pca3(activeBatchVectors);
+
+        // Update variance telemetry
+        VARIANCE_PILL.textContent = "Variance Explained: PC₁-PC₃: " + activePCAModel.percentExplained.toFixed(1) + "%";
+
+        // Render Top-5 Nearest Pairs
+        renderTop5NearestPairs(sentences, activeBatchVectors);
+
+        // If a query was already plotted, re-project it into new space
+        if (currentQuerySentence) {
+          embedAndPlotQuery();
+        } else {
+          refresh3DPlot();
+        }
+      }
+
+      /**
+       * Embeds and plots novel query in existing PCA space.
+       */
+      function embedAndPlotQuery() {
+        const queryText = QUERY_INPUT.value.trim();
+        if (!queryText || !activePCAModel) return;
+
+        currentQuerySentence = queryText;
+
+        // 1. Embed query
+        currentQueryVector = Engine.embedder.embedSentence(queryText, Engine.tokenizer, activeBridgeVocab, activeBatchDF);
+
+        // 2. Project into Dual PCA space
+        currentQueryProjection = activePCAModel.project(currentQueryVector);
+
+        // 3. Render 3-step breakdown
+        QUERY_BREAKDOWN_BOX.style.display = "flex";
+        BTN_CLEAR_QUERY.style.display = "inline-flex";
+
+        // Step 1: Token chips
+        const queryTokens = Engine.tokenizer.tokenize(queryText, activeBridgeVocab);
+        QUERY_TOKEN_COUNT_LABEL.textContent = queryTokens.length + " Tokens";
+        
+        while (QUERY_TOKENS_DISPLAY.firstChild) {
+          QUERY_TOKENS_DISPLAY.removeChild(QUERY_TOKENS_DISPLAY.firstChild);
+        }
+        for (let i = 0; i < queryTokens.length; i++) {
+          const t = queryTokens[i];
+          const chip = createEl("div", "token-chip kind-" + t.kind);
+          chip.appendChild(createEl("span", "chip-text", t.token));
+          chip.appendChild(createEl("span", "chip-id", "#" + t.id));
+          QUERY_TOKENS_DISPLAY.appendChild(chip);
+        }
+
+        // Step 2: Vector preview (first 8 dimensions)
+        const first8 = [];
+        for (let d = 0; d < 8; d++) {
+          const val = currentQueryVector[d];
+          const formatted = (val >= 0 ? "+" : "") + val.toFixed(3);
+          first8.push(formatted);
+        }
+        QUERY_VECTOR_PREVIEW.textContent = "[ " + first8.join(", ") + " ... ]";
+
+        // Step 3: Top-3 Nearest batch sentences
+        while (QUERY_NEAREST_LIST.firstChild) {
+          QUERY_NEAREST_LIST.removeChild(QUERY_NEAREST_LIST.firstChild);
+        }
+
+        const scored = [];
+        for (let i = 0; i < activeBatchSentences.length; i++) {
+          const sim = Engine.embedder.cosineSimilarity(currentQueryVector, activeBatchVectors[i]);
+          scored.push({ index: i, sentence: activeBatchSentences[i], sim: sim });
+        }
+        scored.sort(function(a, b) { return b.sim - a.sim; });
+
+        for (let k = 0; k < Math.min(3, scored.length); k++) {
+          const item = scored[k];
+          const li = createEl("li", "nearest-item");
+
+          const rankSpan = createEl("span", "nearest-rank", String(k + 1));
+          const textSpan = createEl("span", "nearest-text", item.sentence);
+          const simSpan = createEl("span", "nearest-sim", "Sim: " + item.sim.toFixed(4));
+
+          li.appendChild(rankSpan);
+          li.appendChild(textSpan);
+          li.appendChild(simSpan);
+          QUERY_NEAREST_LIST.appendChild(li);
+        }
+
+        // Update 3D visualization
+        refresh3DPlot();
+      }
+
+      /**
+       * Clears user query from 3D plot and breakdown view.
+       */
+      function clearQuery() {
+        currentQuerySentence = null;
+        currentQueryVector = null;
+        currentQueryProjection = null;
+
+        QUERY_BREAKDOWN_BOX.style.display = "none";
+        BTN_CLEAR_QUERY.style.display = "none";
+
+        refresh3DPlot();
+      }
+
+      /* ========================================================================
+         CANVAS INTERACTION HANDLERS (Rotate, Zoom, Hover)
+         ======================================================================== */
+      function setupCanvasInteractions() {
+        CANVAS_EL.addEventListener("mousedown", function(e) {
+          camera.isDragging = true;
+          camera.lastMouseX = e.clientX;
+          camera.lastMouseY = e.clientY;
+        });
+
+        window.addEventListener("mouseup", function() {
+          camera.isDragging = false;
+        });
+
+        CANVAS_EL.addEventListener("mousemove", function(e) {
+          const rect = CANVAS_EL.getBoundingClientRect();
+          const mouseX = e.clientX - rect.left;
+          const mouseY = e.clientY - rect.top;
+
+          if (camera.isDragging) {
+            const dx = e.clientX - camera.lastMouseX;
+            const dy = e.clientY - camera.lastMouseY;
+            camera.azimuth += dx * 0.008;
+            camera.elevation += dy * 0.008;
+
+            // Clamp elevation
+            camera.elevation = Math.max(-1.4, Math.min(1.4, camera.elevation));
+
+            camera.lastMouseX = e.clientX;
+            camera.lastMouseY = e.clientY;
+            renderCanvas2D();
+            CANVAS_TOOLTIP.style.display = "none";
+            return;
+          }
+
+          // Hit testing against points
+          if (!camera.drawablePoints) return;
+          let found = null;
+          for (let p = 0; p < camera.drawablePoints.length; p++) {
+            const pt = camera.drawablePoints[p];
+            const dist = Math.hypot(pt.proj.x - mouseX, pt.proj.y - mouseY);
+            if (dist < 12) {
+              found = pt;
+              break;
+            }
+          }
+
+          if (found) {
+            CANVAS_TOOLTIP.style.display = "block";
+            CANVAS_TOOLTIP.style.left = mouseX + "px";
+            CANVAS_TOOLTIP.style.top = mouseY + "px";
+            TT_CLUSTER.textContent = found.clusterName + (found.label ? " [" + found.label + "]" : "");
+            TT_TEXT.textContent = found.text;
+            TT_COORDS.textContent = "(" + found.raw[0].toFixed(3) + ", " + found.raw[1].toFixed(3) + ", " + found.raw[2].toFixed(3) + ")";
+          } else {
+            CANVAS_TOOLTIP.style.display = "none";
+          }
+        });
+
+        CANVAS_EL.addEventListener("wheel", function(e) {
+          e.preventDefault();
+          camera.distance += e.deltaY * 0.003;
+          camera.distance = Math.max(1.5, Math.min(7.0, camera.distance));
+          renderCanvas2D();
+        }, { passive: false });
+
+        CANVAS_EL.addEventListener("dblclick", function() {
+          camera.azimuth = -0.65;
+          camera.elevation = 0.35;
+          camera.distance = 3.4;
+          renderCanvas2D();
+        });
+
+        BTN_CAMERA_RESET.addEventListener("click", function() {
+          camera.azimuth = -0.65;
+          camera.elevation = 0.35;
+          camera.distance = 3.4;
+          if (isPlotlyUsable()) {
+            window.Plotly.relayout("plotly-container", {
+              "scene.camera.eye": { x: 1.5, y: 1.5, z: 1.2 }
+            });
+          } else {
+            renderCanvas2D();
+          }
+        });
+
+        // Touch support
+        let lastTouchX = 0;
+        let lastTouchY = 0;
+        CANVAS_EL.addEventListener("touchstart", function(e) {
+          if (e.touches.length === 1) {
+            lastTouchX = e.touches[0].clientX;
+            lastTouchY = e.touches[0].clientY;
+          }
+        }, { passive: true });
+
+        CANVAS_EL.addEventListener("touchmove", function(e) {
+          if (e.touches.length === 1) {
+            const dx = e.touches[0].clientX - lastTouchX;
+            const dy = e.touches[0].clientY - lastTouchY;
+            camera.azimuth += dx * 0.008;
+            camera.elevation += dy * 0.008;
+            camera.elevation = Math.max(-1.4, Math.min(1.4, camera.elevation));
+            lastTouchX = e.touches[0].clientX;
+            lastTouchY = e.touches[0].clientY;
+            renderCanvas2D();
+          }
+        }, { passive: true });
+      }
+
+      // Toggle Renderer button
+      BTN_TOGGLE_RENDERER.addEventListener("click", function() {
+        useCanvasFallback = !useCanvasFallback;
+        refresh3DPlot();
+      });
+
+      // Event Listeners
+      BTN_GENERATE.addEventListener("click", generateProjection);
+
+      BTN_RESET_BATCH.addEventListener("click", function() {
+        BATCH_INPUT.value = [
+          "Orbital satellites launch into orbit around planetary celestial spheres.",
+          "Rocket propulsion systems launch spacecraft into orbital space trajectories.",
+          "Planetary astronomy satellites track cosmic orbits across deep space.",
+          "Knead sourdough bread dough thoroughly for artisan yeast loaf baking.",
+          "Bake artisan flour dough into crusty sourdough loaves in the oven.",
+          "Pastry chefs bake sweet sourdough bread rolls in the bakery oven.",
+          "Equity market traders exchange shares during volatile stock trading sessions.",
+          "Financial market brokers trade equity shares and stock portfolio assets.",
+          "Quantitative hedge funds execute stock market trades across financial exchange portfolios."
+        ].join("\n");
+        generateProjection();
+      });
+
+      BTN_EMBED_QUERY.addEventListener("click", embedAndPlotQuery);
+      BTN_CLEAR_QUERY.addEventListener("click", clearQuery);
+
+      QUERY_INPUT.addEventListener("keydown", function(e) {
+        if (e.key === "Enter") {
+          embedAndPlotQuery();
+        }
+      });
+
+      window.addEventListener("resize", function() {
+        if (isPlotlyUsable()) {
+          window.Plotly.Plots.resize("plotly-container");
+        } else {
+          renderCanvas2D();
+        }
+      });
+
+      // Initialization
+      setupCanvasInteractions();
+      generateProjection();
+
+    })(window.WorkbenchEngine);
+
+    /* ==========================================================================
+       MODULE E: INVARIANT VERIFICATION & SELF-TEST SUITE (?selftest)
+       ========================================================================== */
+    (function(Engine) {
+      "use strict";
+
+      const urlParams = new URLSearchParams(window.location.search);
+      const isSelfTest = urlParams.has("selftest");
+      if (!isSelfTest) return;
+
+      const badge = document.getElementById("selftest-badge");
+      if (badge) badge.style.display = "inline-flex";
+
+      const testResults = [];
+
+      function assert(condition, testName) {
+        if (condition) {
+          testResults.push({ name: testName, status: "PASS" });
+          console.log("%c✓ PASS: " + testName, "color: green; font-weight: bold;");
+        } else {
+          testResults.push({ name: testName, status: "FAIL" });
+          console.error("✗ FAIL: " + testName);
+        }
+      }
+
+      console.group("Neural Text & Vector Workbench: Invariant Self-Test Suite");
+
+      // 1. Subword splits and [UNK] handling
+      const corpus = "The rover landed on the red planet. The rocket launched into deep space.";
+      const vocab = Engine.tokenizer.build(corpus);
+      const testTokens = Engine.tokenizer.tokenize("The rockets orbited the starry galaxy.", vocab);
+
+      let foundSubwordRocket = false;
+      let foundUnkGalaxy = false;
+      for (let i = 0; i < testTokens.length; i++) {
+        if (testTokens[i].token === "rocket" || testTokens[i].token === "##s") {
+          foundSubwordRocket = true;
+        }
+        if (testTokens[i].token === "[UNK]" && testTokens[i].kind === "unk") {
+          foundUnkGalaxy = true;
+        }
+      }
+      assert(foundSubwordRocket && foundUnkGalaxy, "1. Subword splits and [UNK] handling for unseen letters");
+
+      // 2. Monotonic token count increases as vocabulary shrinks
+      const fullCount = Engine.tokenizer.tokenize("The rocket launched into deep space.", vocab, vocab.Y).length;
+      const midCount = Engine.tokenizer.tokenize("The rocket launched into deep space.", vocab, Math.floor(vocab.Y / 2)).length;
+      const minCount = Engine.tokenizer.tokenize("The rocket launched into deep space.", vocab, 1).length;
+      assert(minCount >= midCount && midCount >= fullCount, "2. Monotonic token count increases as vocabulary shrinks (" + fullCount + " -> " + midCount + " -> " + minCount + ")");
+
+      // 3. Unit L2 norms (1.0 ± 1e-6)
+      const sampleSentences = [
+        "Orbital satellites launch into orbit around planetary celestial spheres.",
+        "Knead sourdough bread dough thoroughly for artisan yeast loaf baking.",
+        "Equity market traders exchange shares during volatile stock trading sessions."
+      ];
+      const batchDF = Engine.embedder.computeBatchDF(sampleSentences, Engine.tokenizer, vocab);
+      let allNormsUnit = true;
+
+      for (let s = 0; s < sampleSentences.length; s++) {
+        const vec = Engine.embedder.embedSentence(sampleSentences[s], Engine.tokenizer, vocab, batchDF);
+        let sumSq = 0;
+        for (let d = 0; d < 64; d++) sumSq += vec[d] * vec[d];
+        const norm = Math.sqrt(sumSq);
+        if (Math.abs(norm - 1.0) > 1e-6) {
+          allNormsUnit = false;
+          break;
+        }
+      }
+      assert(allNormsUnit, "3. Unit L2 vector normalization (1.0 ± 1e-6)");
+
+      // 4. Higher intra-cluster vs. cross-cluster cosine similarity
+      const clusterBatch = [
+        // Cluster 1
+        "Orbital satellites launch into orbit around planetary celestial spheres.",
+        "Rocket propulsion systems launch spacecraft into orbital space trajectories.",
+        "Planetary astronomy satellites track cosmic orbits across deep space.",
+        // Cluster 2
+        "Knead sourdough bread dough thoroughly for artisan yeast loaf baking.",
+        "Bake artisan flour dough into crusty sourdough loaves in the oven.",
+        "Pastry chefs bake sweet sourdough bread rolls in the bakery oven.",
+        // Cluster 3
+        "Equity market traders exchange shares during volatile stock trading sessions.",
+        "Financial market brokers trade equity shares and stock portfolio assets.",
+        "Quantitative hedge funds execute stock market trades across financial exchange portfolios."
+      ];
+      const clusterVocab = Engine.tokenizer.build(clusterBatch.join(" "));
+      const clusterDF = Engine.embedder.computeBatchDF(clusterBatch, Engine.tokenizer, clusterVocab);
+      const clusterVecs = clusterBatch.map(function(s) {
+        return Engine.embedder.embedSentence(s, Engine.tokenizer, clusterVocab, clusterDF);
+      });
+
+      let intraSum = 0;
+      let intraCount = 0;
+      for (let c = 0; c < 3; c++) {
+        for (let i = c * 3; i < c * 3 + 2; i++) {
+          for (let j = i + 1; j < (c + 1) * 3; j++) {
+            intraSum += Engine.embedder.cosineSimilarity(clusterVecs[i], clusterVecs[j]);
+            intraCount++;
+          }
+        }
+      }
+      const intraAvg = intraSum / intraCount;
+
+      let interSum = 0;
+      let interCount = 0;
+      for (let i = 0; i < 3; i++) {
+        for (let j = 3; j < 9; j++) {
+          interSum += Engine.embedder.cosineSimilarity(clusterVecs[i], clusterVecs[j]);
+          interCount++;
+        }
+      }
+      const interAvg = interSum / interCount;
+      assert(intraAvg > interAvg, "4. Higher intra-cluster vs. cross-cluster similarity (Intra=" + intraAvg.toFixed(3) + " > Inter=" + interAvg.toFixed(3) + ")");
+
+      // 5. NaN-free deterministic PCA projections
+      const pca = Engine.embedder.pca3(clusterVecs);
+      let allFinite = true;
+      for (let i = 0; i < pca.projections.length; i++) {
+        for (let k = 0; k < 3; k++) {
+          if (!Number.isFinite(pca.projections[i][k])) {
+            allFinite = false;
+          }
+        }
+      }
+      assert(allFinite && pca.percentExplained > 0 && pca.percentExplained <= 100, "5. NaN-free deterministic PCA eigensolver with valid variance ratio (" + pca.percentExplained.toFixed(1) + "%)");
+
+      console.groupEnd();
+    })(window.WorkbenchEngine);
+  </script>
+</body>
+</html>
