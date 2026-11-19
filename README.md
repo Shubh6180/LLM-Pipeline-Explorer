@@ -2,6 +2,13 @@
 
 An interactive, zero-dependency educational tool demonstrating how raw text is broken into subword tokens and projected into 3D semantic space. Runs 100% client-side in the browser.
 
+## 🌐 Live Demo
+
+- **Production App:** [https://llm-weld-sigma.vercel.app](https://llm-weld-sigma.vercel.app)
+- **Invariant Self-Test Mode:** [https://llm-weld-sigma.vercel.app/?selftest=true](https://llm-weld-sigma.vercel.app/?selftest=true)
+
+---
+
 ## Features
 
 - **Subword Tokenizer Lab:**
